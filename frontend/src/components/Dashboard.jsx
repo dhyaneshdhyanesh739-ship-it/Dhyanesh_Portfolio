@@ -230,10 +230,7 @@ export default function Dashboard() {
               
               {/* Left Column: Bio Texts & CTAs */}
               <div className="lg:col-span-7 space-y-6">
-                <span className="text-[10px] sm:text-xs font-fira text-slate-500 dark:text-slate-500 tracking-[0.25em] uppercase block">
-                  UPLINK_ESTABLISHED // NODE_DSE
-                </span>
-                
+
                 <div className="space-y-1">
                   <span className="text-slate-500 dark:text-slate-400 font-mono text-xs sm:text-sm uppercase tracking-widest block">HELLO, I'M</span>
                   <h1 className="text-4xl sm:text-6xl font-orbitron font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-none">
