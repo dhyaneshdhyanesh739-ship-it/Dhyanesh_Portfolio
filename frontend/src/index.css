@@ -48,6 +48,7 @@
 
 @theme {
   --color-dark-bg: var(--bg-main);
+  --color-darkBg: var(--bg-main);
   --color-glass-border: var(--glass-border);
   --color-cyber-purple: var(--text-purple-accent);
   --color-cyber-cyan: var(--text-cyan-accent);

@@ -186,7 +186,9 @@ export default function App() {
   }, [scene]);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#020208] text-slate-200 select-none overflow-hidden">
+    <div className={`relative w-full min-h-screen select-none overflow-hidden transition-colors duration-500 ${
+      scene === 'intro' ? 'bg-[#020208] text-slate-200' : 'bg-darkBg text-slate-800 dark:text-slate-200'
+    }`}>
       
       {/* Custom Cursor */}
       {showCursor && (
