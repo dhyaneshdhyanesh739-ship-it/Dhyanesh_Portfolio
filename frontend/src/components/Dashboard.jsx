@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Download, ArrowRight, MousePointer, Clock, ChevronUp, Sun, Moon
+  Download, ArrowRight, MousePointer, Clock, ChevronUp, Sun, Moon, Menu, X
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { useTheme } from '../context/ThemeContext';
@@ -122,6 +122,7 @@ const TypewriterHero = () => {
 export default function Dashboard() {
   const { theme, toggleTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // References for smooth scrolling
   const homeRef = useRef(null);
@@ -164,7 +165,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 cyber-grid cyber-grid-fade pointer-events-none z-0"></div>
 
       {/* HEADER NAVBAR */}
-      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-6 py-3 flex items-center justify-between z-10 relative transition-all duration-300">
+      <header className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-6 py-3 flex items-center justify-between z-30 sticky top-0 transition-all duration-300">
         <div className="flex items-center gap-3.5">
           <div className="w-9 h-9 rounded-full border border-cyan-500/40 flex items-center justify-center relative cursor-pointer" onClick={() => scrollToRef(homeRef)}>
             <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-slate-200 dark:bg-slate-900">
@@ -186,7 +187,7 @@ export default function Dashboard() {
           <button onClick={() => scrollToRef(contactRef)} className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors cursor-pointer">Contact</button>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden md:flex items-center gap-3.5 text-[10px] font-mono text-slate-400 dark:text-slate-500">
             <div className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> <span>{currentTime}</span>
@@ -211,12 +212,69 @@ export default function Dashboard() {
           <a
             href="/dhyaneshresume.pdf"
             download="Dhyanesh_S_E_Resume.pdf"
-            className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-orbitron font-extrabold uppercase text-cyan-600 dark:text-cyan-400 bg-cyan-50/40 dark:bg-cyan-950/15 border border-cyan-200/50 dark:border-cyan-800/25 hover:border-cyan-500 dark:hover:border-cyan-500/50 hover:bg-cyan-100/50 dark:hover:bg-cyan-950/30 rounded-xl transition-all cursor-pointer shadow-[0_2px_8px_rgba(6,182,212,0.05)] dark:shadow-[0_0_10px_rgba(6,182,212,0.1)]"
+            className="flex items-center gap-1.5 px-3 py-2 sm:px-4 text-[10px] font-orbitron font-extrabold uppercase text-cyan-600 dark:text-cyan-400 bg-cyan-50/40 dark:bg-cyan-950/15 border border-cyan-200/50 dark:border-cyan-800/25 hover:border-cyan-500 dark:hover:border-cyan-500/50 hover:bg-cyan-100/50 dark:hover:bg-cyan-950/30 rounded-xl transition-all cursor-pointer shadow-[0_2px_8px_rgba(6,182,212,0.05)] dark:shadow-[0_0_10px_rgba(6,182,212,0.1)]"
           >
-            <Download className="w-3.5 h-3.5" /> Download Resume
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Download Resume</span>
           </a>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden w-9 h-9 rounded-xl glass-panel flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-cyan-500 dark:hover:text-cyan-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer border border-slate-200/80 dark:border-slate-800/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none"
+            aria-label="Toggle Mobile Menu"
+          >
+            {mobileMenuOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
+          </button>
         </div>
       </header>
+
+      {/* Mobile Menu Dropdown/Overlay */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-x-0 top-[57px] z-50 glass-panel border-b border-slate-200 dark:border-slate-850 py-4 px-6 flex flex-col gap-1 animate-slide-down shadow-[0_15px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.2)]">
+          <button 
+            onClick={() => { scrollToRef(homeRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Home
+          </button>
+          <button 
+            onClick={() => { scrollToRef(aboutRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            About
+          </button>
+          <button 
+            onClick={() => { scrollToRef(educationRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Education
+          </button>
+          <button 
+            onClick={() => { scrollToRef(skillsRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Skills
+          </button>
+          <button 
+            onClick={() => { scrollToRef(projectsRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Projects
+          </button>
+          <button 
+            onClick={() => { scrollToRef(experienceRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Experience
+          </button>
+          <button 
+            onClick={() => { scrollToRef(contactRef); setMobileMenuOpen(false); }} 
+            className="text-left py-2.5 px-4 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-450/10 text-xs font-orbitron uppercase font-extrabold tracking-widest text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-200"
+          >
+            Contact
+          </button>
+        </div>
+      )}
 
       {/* DASHBOARD SINGLE-PAGE VERTICAL DOCK */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-12 relative z-10 space-y-16">

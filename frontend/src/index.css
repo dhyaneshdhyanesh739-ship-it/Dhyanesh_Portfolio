@@ -63,6 +63,7 @@
   --animate-aurora: aurora-shift 15s ease infinite;
   --animate-float: floating 6s ease-in-out infinite;
   --animate-sweep: sweep 3s ease-in-out infinite;
+  --animate-slide-down: slide-down 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes aurora-shift {
     0%, 100% { transform: translate(0px, 0px) scale(1); }
@@ -76,6 +77,10 @@
   @keyframes sweep {
     0% { transform: translateX(-150%) skewX(-20deg); }
     50%, 100% { transform: translateX(150%) skewX(-20deg); }
+  }
+  @keyframes slide-down {
+    from { transform: translateY(-12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 }
 
