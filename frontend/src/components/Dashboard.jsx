@@ -274,10 +274,10 @@ export default function Dashboard() {
 
             {/* Bottom Panel Socials Indicator */}
             <div className="absolute bottom-4 left-8 right-8 flex justify-between items-center text-xs font-mono text-slate-500 border-t border-slate-200/80 dark:border-slate-900/60 pt-3 hidden sm:flex">
-              <div className="flex items-center gap-3">
-                <a href="https://github.com/dhyaneshdhyanesh739-ship-it" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"><GithubIcon className="w-4 h-4" /></a>
-                <a href="https://www.linkedin.com/in/dhyanesh-s-e-24a831366" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"><LinkedinIcon className="w-4 h-4" /></a>
-                <a href="mailto:dhyaneshdhyanesh739@gmail.com" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"><MailIcon className="w-4 h-4" /></a>
+              <div className="flex items-center gap-4.5">
+                <a href="https://github.com/dhyaneshdhyanesh739-ship-it" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><GithubIcon className="w-[21px] h-[21px]" /></a>
+                <a href="https://www.linkedin.com/in/dhyanesh-s-e-24a831366" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><LinkedinIcon className="w-[21px] h-[21px]" /></a>
+                <a href="mailto:dhyaneshdhyanesh739@gmail.com" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><MailIcon className="w-[21px] h-[21px]" /></a>
               </div>
               <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-500">
                 <MousePointer className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 animate-bounce" /> Scroll Down to Explore
