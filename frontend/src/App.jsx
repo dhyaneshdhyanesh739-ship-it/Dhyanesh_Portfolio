@@ -24,41 +24,45 @@ const generateLightningPath = (startX, startY, endX, endY, displace) => {
 };
 
 const LightningStorm = () => {
-  const [bolts, setBolts] = useState([]);
+  const svgRef = useRef(null);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    const generateBolts = () => {
-      const newBolts = [];
-      const numBolts = 2 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < numBolts; i++) {
-        const startX = Math.random() * window.innerWidth;
-        const startY = 0;
-        const endX = window.innerWidth / 2 + (Math.random() - 0.5) * 450;
-        const endY = window.innerHeight / 2 + (Math.random() - 0.5) * 200;
-        const path = generateLightningPath(startX, startY, endX, endY, 150);
-        newBolts.push({
-          id: Math.random(),
-          points: path,
-          opacity: 0.65 + Math.random() * 0.35,
-          width: 1.5 + Math.random() * 2
-        });
+    const generateLightningBolts = () => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      
+      // Clear existing bolts
+      while (svg.firstChild && svg.firstChild.tagName !== 'defs') {
+        svg.removeChild(svg.lastChild);
       }
-      setBolts(newBolts);
+
+      if (Math.random() > 0.35) {
+        const numBolts = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < numBolts; i++) {
+          const startX = Math.random() * window.innerWidth;
+          const endX = window.innerWidth / 2 + (Math.random() - 0.5) * 450;
+          const endY = window.innerHeight / 2 + (Math.random() - 0.5) * 200;
+          const path = generateLightningPath(startX, 0, endX, endY, 150);
+
+          const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          polyline.setAttribute('points', path);
+          polyline.setAttribute('fill', 'none');
+          polyline.setAttribute('stroke', '#fbbf24');
+          polyline.setAttribute('stroke-width', String(1.5 + Math.random() * 2));
+          polyline.setAttribute('opacity', String(0.65 + Math.random() * 0.35));
+          polyline.setAttribute('filter', 'url(#gold-glow)');
+          svg.appendChild(polyline);
+        }
+      }
     };
 
-    const interval = setInterval(() => {
-      if (Math.random() > 0.35) {
-        generateBolts();
-      } else {
-        setBolts([]);
-      }
-    }, 90);
-
-    return () => clearInterval(interval);
+    intervalRef.current = setInterval(generateLightningBolts, 150);
+    return () => clearInterval(intervalRef.current);
   }, []);
 
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none z-20">
+    <svg ref={svgRef} className="absolute inset-0 w-full h-full pointer-events-none z-20">
       <defs>
         <filter id="gold-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
@@ -68,17 +72,6 @@ const LightningStorm = () => {
           </feMerge>
         </filter>
       </defs>
-      {bolts.map(b => (
-        <polyline
-          key={b.id}
-          points={b.points}
-          fill="none"
-          stroke="#fbbf24"
-          strokeWidth={b.width}
-          opacity={b.opacity}
-          filter="url(#gold-glow)"
-        />
-      ))}
     </svg>
   );
 };
@@ -86,7 +79,7 @@ const LightningStorm = () => {
 const FireStorm = () => {
   const embers = useMemo(() => {
     const arr = [];
-    const count = 40;
+    const count = 22;
     for (let i = 0; i < count; i++) {
       const left = 10 + Math.random() * 80;
       const size = 5 + Math.random() * 8;
@@ -274,8 +267,8 @@ export default function App() {
                       }}
                       exit={{ opacity: 0, scale: 1.25, filter: 'blur(10px)' }}
                       transition={{ 
-                        x: { repeat: Infinity, duration: 0.12, repeatType: 'mirror' },
-                        y: { repeat: Infinity, duration: 0.18, repeatType: 'mirror' },
+                        x: { repeat: Infinity, duration: 0.25, repeatType: 'mirror' },
+                        y: { repeat: Infinity, duration: 0.35, repeatType: 'mirror' },
                         default: { duration: 0.8, ease: 'easeOut' }
                       }}
                       className="absolute flex flex-col items-center justify-center text-center px-4 z-30"

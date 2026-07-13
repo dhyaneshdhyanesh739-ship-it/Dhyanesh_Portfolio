@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 export default function ParticleBackground({ stage, ...props }) {
   const pointsRef = useRef();
   
-  const count = 1800;
+  const count = 900;
 
   // Let's customize initial structures and velocities based on stage:
   const initialData = useMemo(() => {
