@@ -16,8 +16,8 @@ const createTransporter = () => {
     });
   }
   
-  // Fallback: Mock logger transport that logs to console
-  console.log('SMTP config missing in environment. Using fallback console mail transport.');
+  // Fallback: Mock logger transport that logs to console and delivers via FormSubmit
+  console.log('SMTP config missing in environment. Using fallback FormSubmit mail transport.');
   return {
     sendMail: async (mailOptions) => {
       console.log('================ MOCK EMAIL SEND ================');
@@ -25,6 +25,33 @@ const createTransporter = () => {
       console.log(`Subject: ${mailOptions.subject}`);
       console.log(`Text:\n${mailOptions.text}`);
       console.log('=================================================');
+
+      const details = mailOptions._contactDetails;
+      if (details) {
+        try {
+          console.log(`Routing message via FormSubmit to ${mailOptions.to}...`);
+          const response = await fetch(`https://formsubmit.co/ajax/${mailOptions.to}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Referer': 'http://localhost:5173',
+              'Origin': 'http://localhost:5173'
+            },
+            body: JSON.stringify({
+              name: details.name,
+              email: details.email,
+              _subject: details.subject || `New Contact Form Submission from ${details.name}`,
+              message: details.message,
+              _honey: ''
+            })
+          });
+          const result = await response.json();
+          console.log('FormSubmit response:', result);
+        } catch (err) {
+          console.error('Failed to deliver message via FormSubmit fallback:', err.message);
+        }
+      }
       return { messageId: 'mock-id-' + Date.now() };
     }
   };
@@ -32,32 +59,34 @@ const createTransporter = () => {
 
 export const submitContactForm = async (req, res) => {
   try {
-    const { name, email, message } = req.body;
+    const { name, email, subject, message } = req.body;
 
     if (!name || !email || !message) {
       return res.status(400).json({ success: false, message: 'Please fill in all fields.' });
     }
 
     // Save to DB
-    const newContact = await Contact.create({ name, email, message });
+    const newContact = await Contact.create({ name, email, subject, message });
 
     // Send email notification
     const transporter = createTransporter();
     const mailOptions = {
       from: process.env.SMTP_USER || '"Portfolio Contact" <portfolio@localhost>',
       to: process.env.NOTIFICATION_EMAIL || 'dhyaneshdhyanesh739@gmail.com',
-      subject: `New Contact Form Submission from ${name}`,
-      text: `You have received a new message from your portfolio site:\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}\n\nSubmitted at: ${newContact.createdAt}`,
+      subject: subject ? `New Portfolio Message: ${subject}` : `New Contact Form Submission from ${name}`,
+      text: `You have received a new message from your portfolio site:\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject || 'None'}\nMessage: ${message}\n\nSubmitted at: ${newContact.createdAt}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
           <h2 style="color: #6366f1; border-bottom: 2px solid #6366f1; padding-bottom: 10px;">New Portfolio Message</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+          <p><strong>Subject:</strong> ${subject || 'None'}</p>
           <p><strong>Message:</strong></p>
           <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #6366f1; white-space: pre-wrap; font-style: italic;">${message}</div>
           <p style="font-size: 12px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">Submitted at: ${newContact.createdAt}</p>
         </div>
       `,
+      _contactDetails: { name, email, subject, message }
     };
 
     let emailSent = false;

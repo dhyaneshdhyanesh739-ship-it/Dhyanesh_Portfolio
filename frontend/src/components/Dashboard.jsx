@@ -273,6 +273,12 @@ export default function Dashboard() {
           >
             Contact
           </button>
+          <div className="h-px bg-slate-200 dark:bg-slate-800 my-2 mx-4" />
+          <div className="flex items-center justify-center gap-6 py-2">
+            <a href="https://github.com/dhyaneshdhyanesh739-ship-it" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-650 dark:text-slate-350"><GithubIcon className="w-[21px] h-[21px]" /></a>
+            <a href="https://www.linkedin.com/in/dhyanesh-s-e-24a831366" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-650 dark:text-slate-350"><LinkedinIcon className="w-[21px] h-[21px]" /></a>
+            <a href="mailto:dhyaneshdhyanesh739@gmail.com" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-650 dark:text-slate-350"><MailIcon className="w-[21px] h-[21px]" /></a>
+          </div>
         </div>
       )}
 
@@ -281,7 +287,7 @@ export default function Dashboard() {
         
         {/* SECTION 1: HERO / HOME (Full Screen Height focus) */}
         <section id="home" className="pt-4 scroll-mt-20" ref={homeRef}>
-          <div className="w-full glass-panel p-8 sm:p-12 rounded-[2rem] border border-slate-200/80 dark:border-slate-800/80 hover:border-cyan-500/20 transition-all duration-300 relative overflow-hidden min-h-[460px] flex items-center">
+          <div className="w-full glass-panel p-8 pb-16 sm:p-12 sm:pb-16 rounded-[2rem] border border-slate-200/80 dark:border-slate-800/80 hover:border-cyan-500/20 transition-all duration-300 relative overflow-hidden min-h-[460px] flex items-center">
             <div className="absolute top-0 right-0 w-44 h-44 bg-cyan-500/5 rounded-full filter blur-3xl"></div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full">
@@ -331,13 +337,13 @@ export default function Dashboard() {
             </div>
 
             {/* Bottom Panel Socials Indicator */}
-            <div className="absolute bottom-4 left-8 right-8 flex justify-between items-center text-xs font-mono text-slate-500 border-t border-slate-200/80 dark:border-slate-900/60 pt-3 hidden sm:flex">
+            <div className="absolute bottom-4 left-8 right-8 flex justify-between items-center text-xs font-mono text-slate-500 border-t border-slate-200/80 dark:border-slate-900/60 pt-3">
               <div className="flex items-center gap-4.5">
                 <a href="https://github.com/dhyaneshdhyanesh739-ship-it" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><GithubIcon className="w-[21px] h-[21px]" /></a>
                 <a href="https://www.linkedin.com/in/dhyanesh-s-e-24a831366" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><LinkedinIcon className="w-[21px] h-[21px]" /></a>
                 <a href="mailto:dhyaneshdhyanesh739@gmail.com" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"><MailIcon className="w-[21px] h-[21px]" /></a>
               </div>
-              <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-500">
+              <div className="hidden sm:flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-500">
                 <MousePointer className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 animate-bounce" /> Scroll Down to Explore
               </div>
             </div>
@@ -398,7 +404,12 @@ export default function Dashboard() {
             <span className="text-[10px] text-slate-500">Full Stack Developer & AI & DS Student</span>
           </div>
 
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center gap-2">
+            <div className="flex items-center gap-4.5 md:hidden mb-1">
+              <a href="https://github.com/dhyaneshdhyanesh739-ship-it" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-500"><GithubIcon className="w-[18px] h-[18px]" /></a>
+              <a href="https://www.linkedin.com/in/dhyanesh-s-e-24a831366" target="_blank" rel="noreferrer" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-500"><LinkedinIcon className="w-[18px] h-[18px]" /></a>
+              <a href="mailto:dhyaneshdhyanesh739@gmail.com" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110 text-slate-500"><MailIcon className="w-[18px] h-[18px]" /></a>
+            </div>
             <span>&copy; 2026 Dhyanesh S E. All Rights Reserved.</span>
           </div>
 

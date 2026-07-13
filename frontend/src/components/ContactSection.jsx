@@ -41,7 +41,9 @@ export default function ContactSection() {
     setStatus(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      // Clean up API_URL in case it contains brackets, quotes, or accidental spaces
+      API_URL = API_URL.replace(/[\[\]"']/g, '').trim();
       const response = await axios.post(`${API_URL}/api/contact`, formData);
 
       if (response.data.success) {
