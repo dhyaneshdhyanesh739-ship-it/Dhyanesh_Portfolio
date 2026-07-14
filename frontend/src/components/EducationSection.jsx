@@ -13,7 +13,6 @@ export default function EducationSection() {
         <h2 className="text-xl sm:text-2xl font-orbitron font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-100 flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span> Education
         </h2>
-        <span className="text-[10px] font-fira text-slate-400 dark:text-slate-500 tracking-wider">ACADEMIC_CREDENTIALS // DECODE_OK</span>
       </div>
 
       {/* Education Timeline Grid */}

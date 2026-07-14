@@ -46,7 +46,6 @@ export default function SkillsCloud() {
         <h2 className="text-xl sm:text-2xl font-orbitron font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-100 flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></span> Technical Skills
         </h2>
-        <span className="text-[10px] font-fira text-slate-400 dark:text-slate-500 tracking-wider">SKILLS_MATRIX // DECODE_OK</span>
       </div>
 
       {/* 2x2 Grid Layout */}

@@ -10,7 +10,6 @@ export default function ExperienceSection() {
         <h3 className="text-sm font-orbitron font-extrabold uppercase tracking-widest text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400"></span> EXPERIENCE
         </h3>
-        <span className="text-[9px] font-fira text-slate-400 dark:text-slate-500">ID: DSE_EXP_LOG</span>
       </div>
 
       {/* Timeline item */}
