@@ -60,6 +60,12 @@ export default function ContactSection() {
         API_URL = `https://${API_URL}`;
       }
 
+      // Redirect legacy -backend API URL to main production backend URL
+      if (API_URL && API_URL.includes('dhyanesh-portfolio-backend.onrender.com')) {
+        console.warn(`Redirecting legacy API URL "${API_URL}" to main backend: https://dhyanesh-portfolio.onrender.com`);
+        API_URL = 'https://dhyanesh-portfolio.onrender.com';
+      }
+
       console.log(`Submitting contact form to API endpoint: ${API_URL}/api/contact`);
       const response = await axios.post(`${API_URL}/api/contact`, formData);
 
