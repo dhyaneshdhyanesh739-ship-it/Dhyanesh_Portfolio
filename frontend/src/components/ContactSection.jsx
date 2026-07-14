@@ -41,7 +41,15 @@ export default function ContactSection() {
     setStatus(null);
 
     try {
-      let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      let API_URL = import.meta.env.VITE_API_URL;
+      
+      // If not defined, default to production URL when in production mode, fallback to local in dev
+      if (!API_URL) {
+        API_URL = import.meta.env.DEV 
+          ? 'http://localhost:5000' 
+          : 'https://dhyanesh-portfolio-backend.onrender.com';
+      }
+
       // Clean up API_URL in case it contains brackets, quotes, or accidental spaces
       API_URL = API_URL.replace(/[\[\]"']/g, '').trim();
       const response = await axios.post(`${API_URL}/api/contact`, formData);
