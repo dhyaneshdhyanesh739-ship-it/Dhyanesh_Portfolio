@@ -41,17 +41,32 @@ export default function ContactSection() {
     setStatus(null);
 
     try {
-      let API_URL = import.meta.env.VITE_API_URL;
+      let rawApiUrl = import.meta.env.VITE_API_URL;
+      let API_URL = rawApiUrl;
       
-      // If not defined, default to production URL when in production mode, fallback to local in dev
       if (!API_URL) {
+        console.warn('VITE_API_URL is undefined at build time. Falling back to default service URL.');
         API_URL = import.meta.env.DEV 
           ? 'http://localhost:5000' 
           : 'https://dhyanesh-portfolio-backend.onrender.com';
+      } else {
+        // Clean up API_URL in case it contains brackets, quotes, or accidental spaces
+        API_URL = API_URL.replace(/[\[\]"']/g, '').trim();
       }
 
-      // Clean up API_URL in case it contains brackets, quotes, or accidental spaces
-      API_URL = API_URL.replace(/[\[\]"']/g, '').trim();
+      // Check if protocol is missing (like "dhyanesh-portfolio-backend.onrender.com")
+      if (API_URL && !/^https?:\/\//i.test(API_URL)) {
+        console.error(`ERROR: API URL "${API_URL}" is missing http:// or https:// protocol. Prepending "https://".`);
+        API_URL = `https://${API_URL}`;
+      }
+
+      // Check for common typo (missing "-backend" in Render URL)
+      if (API_URL && API_URL.includes('dhyanesh-portfolio.onrender.com')) {
+        console.warn(`WARNING: The API URL "${API_URL}" appears to be missing the "-backend" suffix. Auto-correcting to https://dhyanesh-portfolio-backend.onrender.com`);
+        API_URL = 'https://dhyanesh-portfolio-backend.onrender.com';
+      }
+
+      console.log(`Submitting contact form to API endpoint: ${API_URL}/api/contact`);
       const response = await axios.post(`${API_URL}/api/contact`, formData);
 
       if (response.data.success) {
