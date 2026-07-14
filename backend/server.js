@@ -21,7 +21,29 @@ app.use(compression());
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'https://dhyanesh-portfolio.netlify.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+
+    if (process.env.CLIENT_URL) {
+      const clientUrl = process.env.CLIENT_URL.replace(/[\[\]"']/g, '').trim();
+      if (!allowedOrigins.includes(clientUrl)) {
+        allowedOrigins.push(clientUrl);
+      }
+    }
+
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };

@@ -105,7 +105,11 @@ export const submitContactForm = async (req, res) => {
       emailSent
     });
   } catch (error) {
-    console.error('Error submitting contact form:', error.message);
-    res.status(500).json({ success: false, message: 'Internal Server Error. Please try again later.' });
+    console.error('Error submitting contact form:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to save contact message to database.', 
+      error: error.message 
+    });
   }
 };
