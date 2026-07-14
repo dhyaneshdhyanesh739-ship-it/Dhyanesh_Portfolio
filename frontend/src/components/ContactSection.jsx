@@ -101,7 +101,6 @@ export default function ContactSection() {
         <h3 className="text-sm font-orbitron font-extrabold uppercase tracking-widest text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400"></span> CONTACT ME
         </h3>
-        <span className="text-[9px] font-fira text-slate-450 dark:text-slate-500">SSL_SECURE: OK</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
