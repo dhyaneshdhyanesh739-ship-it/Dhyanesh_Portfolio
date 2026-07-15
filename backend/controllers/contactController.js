@@ -121,7 +121,7 @@ export const submitContactForm = async (req, res) => {
       console.error('Error sending contact email:', mailError);
       return res.status(500).json({
         success: false,
-        message: 'Failed to send message email. Please try again later.'
+        message: `Failed to send email: ${mailError.message}`
       });
     }
 
