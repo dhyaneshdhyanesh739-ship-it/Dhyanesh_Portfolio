@@ -7,32 +7,32 @@ const skillsData = [
     category: 'Programming',
     icon: Code2,
     borderColor: 'hover:border-blue-500/30',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-950/40 border-blue-800/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconBg: 'bg-blue-100/60 border-blue-200/80 dark:bg-blue-950/40 dark:border-blue-800/30',
     skills: ['Python', 'Java', 'C++', 'C']
   },
   {
     category: 'Web',
     icon: Globe,
     borderColor: 'hover:border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-950/40 border-emerald-800/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-100/60 border-emerald-200/80 dark:bg-emerald-950/40 dark:border-emerald-800/30',
     skills: ['HTML', 'CSS', 'JavaScript', 'MERN Stack']
   },
   {
     category: 'Database',
     icon: Database,
     borderColor: 'hover:border-amber-500/30',
-    iconColor: 'text-amber-400',
-    iconBg: 'bg-amber-950/40 border-amber-800/30',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-amber-100/60 border-amber-200/80 dark:bg-amber-950/40 dark:border-amber-800/30',
     skills: ['DBMS', 'MySQL']
   },
   {
     category: 'Tools',
     icon: Wrench,
     borderColor: 'hover:border-purple-500/30',
-    iconColor: 'text-purple-400',
-    iconBg: 'bg-purple-950/40 border-purple-800/30',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    iconBg: 'bg-purple-100/60 border-purple-200/80 dark:bg-purple-950/40 dark:border-purple-800/30',
     skills: ['n8n', 'UI/UX Design', 'Figma', 'Stitch']
   }
 ];
