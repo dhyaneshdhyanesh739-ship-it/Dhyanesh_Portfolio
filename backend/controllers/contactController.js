@@ -98,7 +98,11 @@ export const submitContactForm = async (req, res) => {
       emailSent = true;
     } catch (mailError) {
       console.error('Error sending email:', mailError.message);
-      // We don't fail the request if mail fails, since the DB write succeeded.
+      return res.status(500).json({
+        success: false,
+        message: `Message saved in database, but failed to send email: ${mailError.message}. Make sure SMTP environment variables are properly set in Render dashboard.`,
+        error: mailError.message
+      });
     }
 
     res.status(201).json({

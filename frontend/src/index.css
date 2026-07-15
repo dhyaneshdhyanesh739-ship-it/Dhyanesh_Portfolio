@@ -337,10 +337,10 @@ body, .glass-panel, .glass-card, header, footer, button, span, h1, h2, h3, h4, h
   left: 0;
   right: 0;
   height: 100%;
-  background: linear-gradient(180deg, rgba(2, 2, 8, 0) 30%, rgba(6, 182, 212, 0.08) 75%, rgba(59, 130, 246, 0.18) 100%);
+  background: linear-gradient(180deg, rgba(2, 2, 8, 0) 20%, rgba(6, 182, 212, 0.18) 60%, rgba(37, 99, 235, 0.32) 100%);
   pointer-events: none;
   z-index: 5;
-  animation: water-waves 5s ease-in-out infinite;
+  animation: water-waves 5s ease-in-out infinite alternate;
   will-change: transform, opacity;
   contain: paint;
 }
@@ -358,38 +358,67 @@ body, .glass-panel, .glass-card, header, footer, button, span, h1, h2, h3, h4, h
   background-clip: text;
   color: transparent;
   animation: water-slosh 4s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.45));
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.6)) drop-shadow(0 0 45px rgba(59, 130, 246, 0.3));
+}
+
+/* Water Drop particles falling effect */
+@keyframes fall-and-splash {
+  0% {
+    transform: translateY(-20px) scaleY(1);
+    background: rgba(6, 182, 212, 0.7);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+    transform: translateY(105vh) scaleY(1);
+  }
+  100% {
+    transform: translateY(105vh) scaleY(0.1);
+    background: rgba(59, 130, 246, 0.9);
+    opacity: 0;
+  }
+}
+
+.water-drop-particle {
+  background: linear-gradient(180deg, rgba(6, 182, 212, 0.8), rgba(59, 130, 246, 0.8));
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+  animation: fall-and-splash infinite linear;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 /* Fire Glow & Flicker Effect for Vici */
 @keyframes fire-glow {
   0%, 100% { opacity: 0.3; transform: scale(1); filter: blur(40px); }
-  50% { opacity: 0.6; transform: scale(1.1); filter: blur(28px); }
+  50% { opacity: 0.75; transform: scale(1.15); filter: blur(24px); }
 }
 
 .fire-glow-overlay {
   position: absolute;
-  bottom: -20%;
-  left: 15%;
-  right: 15%;
-  height: 70%;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.28) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(2, 2, 8, 0) 80%);
+  bottom: -15%;
+  left: 5%;
+  right: 5%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.45) 0%, rgba(245, 158, 11, 0.25) 50%, rgba(2, 2, 8, 0) 85%);
   pointer-events: none;
   z-index: 5;
-  animation: fire-glow 3s ease-in-out infinite;
+  animation: fire-glow 2.5s ease-in-out infinite;
   will-change: opacity, transform;
   contain: paint;
 }
 
 @keyframes fire-flicker {
   0%   { transform: translate(0, 0) scale(1); }
-  33%  { transform: translate(-1px, 1px) scale(1.01); }
-  66%  { transform: translate(1px, -1px) scale(0.99); }
+  33%  { transform: translate(-1.5px, 1.5px) scale(1.02); }
+  66%  { transform: translate(1.5px, -1.5px) scale(0.98); }
   100% { transform: translate(0, 0) scale(1); }
 }
 
 .fire-glow-wrapper {
-  filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.95)) drop-shadow(0 0 40px rgba(245, 158, 11, 0.75)) drop-shadow(0 0 70px rgba(251, 191, 36, 0.55));
+  filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.95)) drop-shadow(0 0 50px rgba(245, 158, 11, 0.75)) drop-shadow(0 0 80px rgba(251, 191, 36, 0.55));
   will-change: filter;
 }
 
@@ -402,35 +431,31 @@ body, .glass-panel, .glass-card, header, footer, button, span, h1, h2, h3, h4, h
   will-change: transform;
 }
 
-/* Fire Ember CSS particles rising effect */
+/* Fire Ember CSS particles rising effect with horizontal sway */
 @keyframes rise-and-burn {
   0% {
-    transform: translateY(150px) scale(1) rotate(0deg);
+    transform: translateY(20px) translateX(0) scale(1) rotate(0deg);
     background: #fef08a; /* yellow */
     opacity: 0.95;
     filter: blur(0.5px);
   }
-  40% {
-    background: #fbbf24; /* gold */
-    opacity: 0.85;
+  50% {
+    transform: translateY(-50vh) translateX(20px) scale(0.8) rotate(180deg);
+    background: #ea580c; /* orange-red */
+    opacity: 0.8;
     filter: blur(1.5px);
   }
-  75% {
-    background: #ea580c; /* orange-red */
-    opacity: 0.45;
-    filter: blur(2.5px);
-  }
   100% {
-    transform: translateY(-280px) scale(0.2) rotate(360deg);
+    transform: translateY(-105vh) translateX(-25px) scale(0.3) rotate(360deg);
     background: #7f1d1d; /* dark red */
     opacity: 0;
-    filter: blur(3.5px);
+    filter: blur(2.5px);
   }
 }
 
 .fire-ember-particle {
   background: #fef08a;
-  box-shadow: 0 0 8px #fef08a, 0 0 16px #fbbf24, 0 0 24px #ea580c;
+  box-shadow: 0 0 10px #fef08a, 0 0 20px #fbbf24, 0 0 30px #ea580c;
   opacity: 0;
   animation: rise-and-burn infinite linear;
   will-change: transform, opacity;

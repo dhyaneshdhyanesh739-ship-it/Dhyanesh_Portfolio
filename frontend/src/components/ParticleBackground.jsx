@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 export default function ParticleBackground({ stage, ...props }) {
   const pointsRef = useRef();
   
-  const count = 900;
+  const count = 2500;
 
   // Let's customize initial structures and velocities based on stage:
   const initialData = useMemo(() => {
@@ -34,7 +34,7 @@ export default function ParticleBackground({ stage, ...props }) {
       } else if (stage === 'vidi') {
         // WATER: Ripple waves flat grid
         const angle = Math.random() * Math.PI * 2;
-        const radius = 1 + Math.random() * 6;
+        const radius = 1 + Math.random() * 6.5;
         pos[i * 3] = radius * Math.cos(angle);
         pos[i * 3 + 1] = Math.sin(radius * 1.5) * 0.5;
         pos[i * 3 + 2] = radius * Math.sin(angle);
@@ -50,13 +50,13 @@ export default function ParticleBackground({ stage, ...props }) {
       } else {
         // FIRE (vici): Rising embers
         const angle = Math.random() * Math.PI * 2;
-        const r = Math.random() * 2.0; 
+        const r = Math.random() * 2.2; 
         pos[i * 3] = r * Math.cos(angle);
         pos[i * 3 + 1] = -4.0 + Math.random() * 8.0; 
         pos[i * 3 + 2] = r * Math.sin(angle);
 
         vel[i * 3] = (Math.random() - 0.5) * 0.02;
-        vel[i * 3 + 1] = 0.03 + Math.random() * 0.05; // fast rise speed
+        vel[i * 3 + 1] = 0.04 + Math.random() * 0.08; // slightly faster rise speed for more fire intensity
         vel[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
 
         // Fiery red/orange/yellow
@@ -111,12 +111,19 @@ export default function ParticleBackground({ stage, ...props }) {
         const z = posArr[i * 3 + 2];
         const dist = Math.sqrt(x * x + z * z);
 
-        // Sinusoidal wave motion
-        posArr[i * 3 + 1] = Math.sin(dist * 1.3 - time * 2.2) * 0.5 + Math.cos(x * 0.6 + time) * 0.25;
+        // Sinusoidal wave motion (higher amplitude & faster frequency for stronger water wave effect)
+        const waveHeight = Math.sin(dist * 1.6 - time * 3.2) * 0.8 + Math.cos(x * 0.8 + time * 1.6) * 0.35;
+        posArr[i * 3 + 1] = waveHeight;
 
         // Gentle float rotation
         posArr[i * 3] += initialData.vel[i * 3];
         posArr[i * 3 + 2] += initialData.vel[i * 3 + 2];
+
+        // Dynamic height-based shading: white foam peaks, cyan mid, deep blue troughs
+        const normH = (waveHeight + 1.15) / 2.3; // normalize from ~ -1.15 to +1.15 into 0 to 1
+        colArr[i * 3] = Math.max(0.0, Math.min(1.0, normH * 0.55)); // white foam at top
+        colArr[i * 3 + 1] = Math.max(0.0, Math.min(1.0, 0.45 + normH * 0.55));
+        colArr[i * 3 + 2] = Math.max(0.0, Math.min(1.0, 0.8 + normH * 0.2));
 
       } else {
         // FIRE: Rising embers drifting up
@@ -147,9 +154,9 @@ export default function ParticleBackground({ stage, ...props }) {
 
     // Apply basic rotations to points container
     if (stage === 'vici') {
-      pointsRef.current.rotation.y += 0.012;
+      pointsRef.current.rotation.y += 0.015; // slightly faster spin
     } else if (stage === 'vidi') {
-      pointsRef.current.rotation.y += 0.003;
+      pointsRef.current.rotation.y += 0.005; // slightly faster spin
     } else {
       pointsRef.current.rotation.y += 0.025;
     }
@@ -170,10 +177,10 @@ export default function ParticleBackground({ stage, ...props }) {
       <pointsMaterial
         transparent
         vertexColors
-        size={stage === 'vici' ? 0.08 : stage === 'vini' ? 0.065 : 0.045}
+        size={stage === 'vici' ? 0.11 : stage === 'vidi' ? 0.08 : stage === 'vini' ? 0.065 : 0.045}
         sizeAttenuation={true}
         depthWrite={false}
-        opacity={stage === 'vici' ? 0.75 : 0.6}
+        opacity={stage === 'vici' ? 0.85 : stage === 'vidi' ? 0.75 : 0.6}
       />
     </points>
   );

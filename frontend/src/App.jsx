@@ -79,12 +79,12 @@ const LightningStorm = () => {
 const FireStorm = () => {
   const embers = useMemo(() => {
     const arr = [];
-    const count = 22;
+    const count = 65; // increased from 22 for richer fire storm
     for (let i = 0; i < count; i++) {
-      const left = 10 + Math.random() * 80;
-      const size = 5 + Math.random() * 8;
+      const left = 5 + Math.random() * 90;
+      const size = 6 + Math.random() * 12; // larger embers
       const delay = Math.random() * 2;
-      const duration = 1.0 + Math.random() * 1.5;
+      const duration = 1.2 + Math.random() * 1.8;
       arr.push({ id: i, left, size, delay, duration });
     }
     return arr;
@@ -102,6 +102,39 @@ const FireStorm = () => {
             height: `${e.size}px`,
             animationDelay: `${e.delay}s`,
             animationDuration: `${e.duration}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const WaterDroplets = () => {
+  const drops = useMemo(() => {
+    const arr = [];
+    const count = 45;
+    for (let i = 0; i < count; i++) {
+      const left = Math.random() * 100;
+      const size = 1.5 + Math.random() * 3.5;
+      const delay = Math.random() * 3;
+      const duration = 1.2 + Math.random() * 1.8;
+      arr.push({ id: i, left, size, delay, duration });
+    }
+    return arr;
+  }, []);
+
+  return (
+    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-20">
+      {drops.map(d => (
+        <span
+          key={d.id}
+          className="absolute top-[-25px] rounded-full water-drop-particle"
+          style={{
+            left: `${d.left}%`,
+            width: `${d.size}px`,
+            height: `${d.size * 5.5}px`,
+            animationDelay: `${d.delay}s`,
+            animationDuration: `${d.duration}s`
           }}
         />
       ))}
@@ -291,6 +324,7 @@ export default function App() {
                 {introStage === 'vidi' && (
                   <>
                     <div className="water-overlay" />
+                    <WaterDroplets />
                     <motion.div
                       key="vidi"
                       initial={{ scale: 0.95, opacity: 0, filter: 'blur(5px)' }}
