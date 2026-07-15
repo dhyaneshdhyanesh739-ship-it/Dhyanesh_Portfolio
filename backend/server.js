@@ -43,7 +43,8 @@ const corsOptions = {
     // In development or server-to-server calls, allow null/missing origins.
     if (!origin) {
       if (process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin missing - Not allowed by CORS'));
+        console.warn('CORS Block: Request origin is missing in production.');
+        return callback(null, false);
       }
       return callback(null, true);
     }
@@ -51,7 +52,8 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`CORS Block: Origin "${origin}" is not in the allowed list:`, allowedOrigins);
+      callback(null, false);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
