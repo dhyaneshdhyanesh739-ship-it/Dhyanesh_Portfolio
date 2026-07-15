@@ -1,40 +1,8 @@
 import Contact from '../models/Contact.js';
-import nodemailer from 'nodemailer';
+import dns from 'dns';
 
-// Helper to create a nodemailer transporter
-const createTransporter = () => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Email credentials (EMAIL_USER / EMAIL_APP_PASSWORD) are not configured in environment.');
-    }
-    console.warn('EMAIL_USER or EMAIL_APP_PASSWORD missing. Using fallback mock transporter in development.');
-    return {
-      sendMail: async (mailOptions) => {
-        console.log('================ MOCK EMAIL SEND (DEV) ================');
-        console.log(`To: ${mailOptions.to}`);
-        console.log(`From: ${mailOptions.from}`);
-        console.log(`Reply-To: ${mailOptions.replyTo}`);
-        console.log(`Subject: ${mailOptions.subject}`);
-        console.log(`Text:\n${mailOptions.text}`);
-        console.log('======================================================');
-        return { messageId: 'mock-id-' + Date.now() };
-      }
-    };
-  }
-
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_APP_PASSWORD,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-};
+// Ensure Node prefers IPv4 to prevent local connect timeouts on IPv6-only lookups
+dns.setDefaultResultOrder('ipv4first');
 
 export const submitContactForm = async (req, res) => {
   try {
@@ -84,45 +52,65 @@ export const submitContactForm = async (req, res) => {
       });
     }
 
-    // 4. Send Email via Gmail SMTP
-    let transporter;
-    try {
-      transporter = createTransporter();
-    } catch (transporterError) {
-      console.error('Failed to initialize mail transporter:', transporterError);
-      return res.status(500).json({
-        success: false,
-        message: 'Mail service is currently unavailable. Please try again later.'
-      });
-    }
+    // 4. Send Email via Resend API (HTTPS on Port 443)
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'dhyaneshdhyanesh739@gmail.com',
-      to: 'dhyaneshdhyanesh739@gmail.com',
-      replyTo: email.trim(),
-      subject: emailSubject,
-      text: `You have received a new contact message from your portfolio site:\n\nName: ${name.trim()}\nEmail: ${email.trim()}\nSubject: ${finalSubject}\n\nMessage:\n${message.trim()}\n\nSubmitted at: ${newContact.createdAt}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #06b6d4; border-bottom: 2px solid #06b6d4; padding-bottom: 10px;">New Portfolio Contact</h2>
-          <p><strong>Name:</strong> ${name.trim()}</p>
-          <p><strong>Email:</strong> <a href="mailto:${email.trim()}">${email.trim()}</a></p>
-          <p><strong>Subject:</strong> ${finalSubject}</p>
-          <p><strong>Message:</strong></p>
-          <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #06b6d4; white-space: pre-wrap; font-style: italic; margin-top: 10px;">${message.trim()}</div>
-          <p style="font-size: 11px; color: #777; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px;">Submitted at: ${newContact.createdAt}</p>
-        </div>
-      `
-    };
+    if (!resendApiKey) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('Failed to send contact email: RESEND_API_KEY is not configured.');
+        return res.status(500).json({
+          success: false,
+          message: 'Mail service configuration error. Please contact the administrator.'
+        });
+      }
 
-    try {
-      await transporter.sendMail(mailOptions);
-    } catch (mailError) {
-      console.error('Error sending contact email:', mailError);
-      return res.status(500).json({
-        success: false,
-        message: `Failed to send email: ${mailError.message}`
-      });
+      // Development mock fallback if RESEND_API_KEY is missing
+      console.warn('RESEND_API_KEY missing. Using fallback mock transporter in development.');
+      console.log('================ MOCK EMAIL SEND (DEV - RESEND) ================');
+      console.log(`To: dhyaneshdhyanesh739@gmail.com`);
+      console.log(`From: Portfolio Contact <onboarding@resend.dev>`);
+      console.log(`Reply-To: ${email.trim()}`);
+      console.log(`Subject: ${emailSubject}`);
+      console.log(`Text:\nName: ${name.trim()}\nEmail: ${email.trim()}\nSubject: ${finalSubject}\nMessage:\n${message.trim()}`);
+      console.log('================================================================');
+    } else {
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Portfolio Contact <onboarding@resend.dev>',
+            to: 'dhyaneshdhyanesh739@gmail.com',
+            reply_to: email.trim(),
+            subject: emailSubject,
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+                <h2 style="color: #06b6d4; border-bottom: 2px solid #06b6d4; padding-bottom: 10px;">New Portfolio Contact</h2>
+                <p><strong>Name:</strong> ${name.trim()}</p>
+                <p><strong>Email:</strong> <a href="mailto:${email.trim()}">${email.trim()}</a></p>
+                <p><strong>Subject:</strong> ${finalSubject}</p>
+                <p><strong>Message:</strong></p>
+                <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #06b6d4; white-space: pre-wrap; font-style: italic; margin-top: 10px;">${message.trim()}</div>
+                <p style="font-size: 11px; color: #777; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px;">Submitted at: ${newContact.createdAt}</p>
+              </div>
+            `
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Resend returned status ${response.status}`);
+        }
+      } catch (mailError) {
+        console.error('Error sending contact email via Resend:', mailError);
+        return res.status(500).json({
+          success: false,
+          message: `Failed to send email: ${mailError.message}`
+        });
+      }
     }
 
     // Success response: 200 { success: true, message: "Message sent successfully" }
