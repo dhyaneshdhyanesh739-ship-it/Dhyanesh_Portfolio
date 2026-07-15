@@ -24,7 +24,6 @@ export default function EducationSection() {
               <span className="text-[10px] font-fira bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/30 px-2 py-0.5 rounded text-purple-600 dark:text-purple-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> 2024 - 2028
               </span>
-              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">ID: KIT_CBE</span>
             </div>
 
             <div>
@@ -56,7 +55,6 @@ export default function EducationSection() {
               <span className="text-[10px] font-fira bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/30 px-2 py-0.5 rounded text-cyan-600 dark:text-cyan-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> 2023 - 2024
               </span>
-              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">ID: TMHNUM_SCH</span>
             </div>
 
             <div>
