@@ -31,9 +31,29 @@ export default function ContactSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
+    
+    // Client-side Validation: required fields (trimmed)
+    if (!formData.name || !formData.name.trim()) {
       setStatus('error');
-      setStatusMsg('Please complete all form fields.');
+      setStatusMsg('Please enter your name.');
+      return;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      setStatus('error');
+      setStatusMsg('Please enter your email address.');
+      return;
+    }
+    if (!formData.message || !formData.message.trim()) {
+      setStatus('error');
+      setStatusMsg('Please enter your message.');
+      return;
+    }
+
+    // Client-side Validation: email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setStatus('error');
+      setStatusMsg('Please enter a valid email address.');
       return;
     }
 
@@ -67,11 +87,16 @@ export default function ContactSection() {
       }
 
       console.log(`Submitting contact form to API endpoint: ${API_URL}/api/contact`);
-      const response = await axios.post(`${API_URL}/api/contact`, formData);
+      const response = await axios.post(`${API_URL}/api/contact`, {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject,
+        message: formData.message.trim()
+      });
 
       if (response.data.success) {
         setStatus('success');
-        setStatusMsg('Message transmitted successfully!');
+        setStatusMsg(response.data.message || 'Message transmitted successfully!');
         setFormData({ name: '', email: '', subject: '', message: '' });
         
         confetti({
@@ -82,12 +107,15 @@ export default function ContactSection() {
         });
       } else {
         setStatus('error');
-        setStatusMsg('System rejected payload.');
+        setStatusMsg(response.data.message || 'System rejected payload.');
       }
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setStatusMsg('Transmission failed. Verify backend service.');
+      
+      // Clear, specific error message on failure
+      const errorMsg = err.response?.data?.message || 'Transmission failed. Verify backend service.';
+      setStatusMsg(errorMsg);
     } finally {
       setLoading(false);
     }

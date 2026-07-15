@@ -3,120 +3,138 @@ import nodemailer from 'nodemailer';
 
 // Helper to create a nodemailer transporter
 const createTransporter = () => {
-  // If SMTP configurations are present in env, use them
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-  }
-  
-  // Fallback: Mock logger transport that logs to console and delivers via FormSubmit
-  console.log('SMTP config missing in environment. Using fallback FormSubmit mail transport.');
-  return {
-    sendMail: async (mailOptions) => {
-      console.log('================ MOCK EMAIL SEND ================');
-      console.log(`To: ${mailOptions.to}`);
-      console.log(`Subject: ${mailOptions.subject}`);
-      console.log(`Text:\n${mailOptions.text}`);
-      console.log('=================================================');
-
-      const details = mailOptions._contactDetails;
-      if (details) {
-        try {
-          console.log(`Routing message via FormSubmit to ${mailOptions.to}...`);
-          const response = await fetch(`https://formsubmit.co/ajax/${mailOptions.to}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Referer': 'http://localhost:5173',
-              'Origin': 'http://localhost:5173'
-            },
-            body: JSON.stringify({
-              name: details.name,
-              email: details.email,
-              _subject: details.subject || `New Contact Form Submission from ${details.name}`,
-              message: details.message,
-              _honey: ''
-            })
-          });
-          const result = await response.json();
-          console.log('FormSubmit response:', result);
-        } catch (err) {
-          console.error('Failed to deliver message via FormSubmit fallback:', err.message);
-        }
-      }
-      return { messageId: 'mock-id-' + Date.now() };
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Email credentials (EMAIL_USER / EMAIL_APP_PASSWORD) are not configured in environment.');
     }
-  };
+    console.warn('EMAIL_USER or EMAIL_APP_PASSWORD missing. Using fallback mock transporter in development.');
+    return {
+      sendMail: async (mailOptions) => {
+        console.log('================ MOCK EMAIL SEND (DEV) ================');
+        console.log(`To: ${mailOptions.to}`);
+        console.log(`From: ${mailOptions.from}`);
+        console.log(`Reply-To: ${mailOptions.replyTo}`);
+        console.log(`Subject: ${mailOptions.subject}`);
+        console.log(`Text:\n${mailOptions.text}`);
+        console.log('======================================================');
+        return { messageId: 'mock-id-' + Date.now() };
+      }
+    };
+  }
+
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_APP_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
 export const submitContactForm = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
-    if (!name || !email || !message) {
-      return res.status(400).json({ success: false, message: 'Please fill in all fields.' });
+    // 1. Validation: required fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Name is required.' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email address is required.' });
+    }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Message is required.' });
     }
 
-    // Save to DB
-    const newContact = await Contact.create({ name, email, subject, message });
+    // 2. Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+    }
 
-    // Send email notification
-    const transporter = createTransporter();
-    const mailOptions = {
-      from: process.env.SMTP_USER || '"Portfolio Contact" <portfolio@localhost>',
-      to: process.env.NOTIFICATION_EMAIL || 'dhyaneshdhyanesh739@gmail.com',
-      subject: subject ? `New Portfolio Message: ${subject}` : `New Contact Form Submission from ${name}`,
-      text: `You have received a new message from your portfolio site:\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject || 'None'}\nMessage: ${message}\n\nSubmitted at: ${newContact.createdAt}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #6366f1; border-bottom: 2px solid #6366f1; padding-bottom: 10px;">New Portfolio Message</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-          <p><strong>Subject:</strong> ${subject || 'None'}</p>
-          <p><strong>Message:</strong></p>
-          <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #6366f1; white-space: pre-wrap; font-style: italic;">${message}</div>
-          <p style="font-size: 12px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">Submitted at: ${newContact.createdAt}</p>
-        </div>
-      `,
-      _contactDetails: { name, email, subject, message }
-    };
+    // 3. Subject logic:
+    // Default subject to "No Subject" if empty or "none" (case insensitive)
+    const isSubjectEmptyOrNone = !subject || !subject.trim() || subject.trim().toLowerCase() === 'none';
+    const finalSubject = isSubjectEmptyOrNone ? 'No Subject' : subject.trim();
 
-    let emailSent = false;
+    // Subject for the notification email
+    const emailSubject = isSubjectEmptyOrNone 
+      ? 'New Contact Form Message' 
+      : `Portfolio Contact: ${subject.trim()}`;
+
+    // Save message to Database (matching existing Contact model functionality)
+    let newContact;
     try {
-      await transporter.sendMail(mailOptions);
-      emailSent = true;
-    } catch (mailError) {
-      console.error('Error sending email:', mailError.message);
+      newContact = await Contact.create({
+        name: name.trim(),
+        email: email.trim(),
+        subject: finalSubject,
+        message: message.trim()
+      });
+    } catch (dbError) {
+      console.error('Error saving message to MongoDB:', dbError);
       return res.status(500).json({
         success: false,
-        message: `Message saved in database, but failed to send email: ${mailError.message}. Make sure SMTP environment variables are properly set in Render dashboard.`,
-        error: mailError.message
+        message: 'Could not record message. Please try again.'
       });
     }
 
-    res.status(201).json({
+    // 4. Send Email via Gmail SMTP
+    let transporter;
+    try {
+      transporter = createTransporter();
+    } catch (transporterError) {
+      console.error('Failed to initialize mail transporter:', transporterError);
+      return res.status(500).json({
+        success: false,
+        message: 'Mail service is currently unavailable. Please try again later.'
+      });
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'dhyaneshdhyanesh739@gmail.com',
+      to: 'dhyaneshdhyanesh739@gmail.com',
+      replyTo: email.trim(),
+      subject: emailSubject,
+      text: `You have received a new contact message from your portfolio site:\n\nName: ${name.trim()}\nEmail: ${email.trim()}\nSubject: ${finalSubject}\n\nMessage:\n${message.trim()}\n\nSubmitted at: ${newContact.createdAt}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #06b6d4; border-bottom: 2px solid #06b6d4; padding-bottom: 10px;">New Portfolio Contact</h2>
+          <p><strong>Name:</strong> ${name.trim()}</p>
+          <p><strong>Email:</strong> <a href="mailto:${email.trim()}">${email.trim()}</a></p>
+          <p><strong>Subject:</strong> ${finalSubject}</p>
+          <p><strong>Message:</strong></p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #06b6d4; white-space: pre-wrap; font-style: italic; margin-top: 10px;">${message.trim()}</div>
+          <p style="font-size: 11px; color: #777; margin-top: 25px; border-top: 1px solid #eee; padding-top: 10px;">Submitted at: ${newContact.createdAt}</p>
+        </div>
+      `
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (mailError) {
+      console.error('Error sending contact email:', mailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send message email. Please try again later.'
+      });
+    }
+
+    // Success response: 200 { success: true, message: "Message sent successfully" }
+    return res.status(200).json({
       success: true,
-      message: 'Thank you for your message! It has been recorded successfully.',
-      data: newContact,
-      emailSent
+      message: 'Message sent successfully'
     });
   } catch (error) {
-    console.error('Error submitting contact form:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to save contact message to database.', 
-      error: error.message 
+    console.error('Error in submitContactForm controller:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An unexpected server error occurred. Please try again later.'
     });
   }
 };
