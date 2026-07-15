@@ -24,18 +24,20 @@ app.use(compression());
 const allowedOrigins = [];
 
 if (process.env.CLIENT_URL) {
-  const clientUrl = process.env.CLIENT_URL.replace(/[\[\]"']/g, '').trim();
-  allowedOrigins.push(clientUrl);
+  // Support comma-separated URLs (e.g. "https://my-site.com, http://localhost:5173")
+  const urls = process.env.CLIENT_URL.split(',');
+  urls.forEach(url => {
+    const cleaned = url.replace(/[\[\]"']/g, '').trim();
+    if (cleaned) allowedOrigins.push(cleaned);
+  });
 } else {
   // Deployed production frontend default
   allowedOrigins.push('https://dhyanesh-portfolio.netlify.app');
 }
 
-// Allow local development domains if not in production
-if (process.env.NODE_ENV !== 'production') {
-  allowedOrigins.push('http://localhost:5173');
-  allowedOrigins.push('http://localhost:3000');
-}
+// Always allow local development domains to make testing easier
+allowedOrigins.push('http://localhost:5173');
+allowedOrigins.push('http://localhost:3000');
 
 const corsOptions = {
   origin: (origin, callback) => {
