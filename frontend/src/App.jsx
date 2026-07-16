@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Component imports
 import ParticleBackground from './components/ParticleBackground';
 import Dashboard from './components/Dashboard';
+import vediImg from './assets/vedi.jpg';
+import viciImg from './assets/vici.png';
 
 const generateLightningPath = (startX, startY, endX, endY, displace) => {
   const points = [[startX, startY]];
@@ -311,11 +313,12 @@ export default function App() {
                       }}
                       className="absolute flex flex-col items-center justify-center text-center px-4 z-30"
                     >
-                      <div className="relative select-none fire-glow-wrapper">
-                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-orbitron font-black tracking-[0.2em] uppercase leading-none fire-text">
-                          VICI
-                          <span className="absolute inset-0 text-transparent bg-clip-text bg-gradient-to-r from-transparent via-orange-500/20 to-transparent animate-pulse pointer-events-none"></span>
-                        </h1>
+                      <div className="relative select-none flex justify-center items-center">
+                        <img 
+                          src={viciImg} 
+                          alt="VICI" 
+                          className="max-w-[80vw] max-h-[40vh] sm:max-h-[50vh] object-contain mix-blend-screen select-none pointer-events-none" 
+                        />
                       </div>
                       <p 
                         className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-orange-400 uppercase mt-4"
@@ -349,9 +352,13 @@ export default function App() {
                       }}
                       className="absolute flex flex-col items-center justify-center text-center px-4"
                     >
-                      <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-orbitron font-black tracking-[0.2em] select-none uppercase leading-none water-text">
-                        VIDI
-                      </h1>
+                      <div className="relative select-none flex justify-center items-center">
+                        <img 
+                          src={vediImg} 
+                          alt="VEDI" 
+                          className="max-w-[80vw] max-h-[40vh] sm:max-h-[50vh] object-contain mix-blend-screen select-none pointer-events-none" 
+                        />
+                      </div>
                       <p 
                         className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-cyan-300 uppercase mt-4"
                         style={{ textShadow: '0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(6,182,212,0.7)' }}
