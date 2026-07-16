@@ -315,7 +315,7 @@ export default function App() {
                     >
                       <div className="relative select-none gold-glow-wrapper">
                         <Sparkles color="#fef08a" />
-                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none electric-text">
+                        <h1 className="text-[5.5rem] sm:text-[11rem] md:text-[14rem] lg:text-[18rem] xl:text-[22rem] font-serif font-bold tracking-[0.05em] uppercase leading-none whitespace-nowrap electric-text">
                           VINI
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/25 to-transparent -skew-x-20 animate-sweep mix-blend-overlay pointer-events-none"></div>
                         </h1>
@@ -354,7 +354,7 @@ export default function App() {
                     >
                       <div className="relative select-none fire-glow-wrapper">
                         <Sparkles color="#ff4500" />
-                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none fire-text">
+                        <h1 className="text-[5.5rem] sm:text-[11rem] md:text-[14rem] lg:text-[18rem] xl:text-[22rem] font-serif font-bold tracking-[0.05em] uppercase leading-none whitespace-nowrap fire-text">
                           VICI
                         </h1>
                       </div>
@@ -392,7 +392,7 @@ export default function App() {
                     >
                       <div className="relative select-none">
                         <Sparkles color="#22d3ee" />
-                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none water-text">
+                        <h1 className="text-[5.5rem] sm:text-[11rem] md:text-[14rem] lg:text-[18rem] xl:text-[22rem] font-serif font-bold tracking-[0.05em] uppercase leading-none whitespace-nowrap water-text">
                           VEDI
                         </h1>
                       </div>
