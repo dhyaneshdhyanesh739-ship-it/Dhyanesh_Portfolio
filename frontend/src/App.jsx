@@ -353,7 +353,7 @@ export default function App() {
                       className="absolute flex flex-col items-center justify-center text-center px-4 z-30"
                     >
                       <div className="relative select-none fire-glow-wrapper">
-                        <Sparkles color="#fb923c" />
+                        <Sparkles color="#ff4500" />
                         <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none fire-text">
                           VICI
                         </h1>
