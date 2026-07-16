@@ -275,11 +275,14 @@ export default function App() {
                     >
                       <div className="relative select-none gold-glow-wrapper">
                         <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-orbitron font-black tracking-[0.2em] uppercase leading-none pr-[-0.2em] electric-text">
-                          VINI
+                          VENI
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/25 to-transparent -skew-x-20 animate-sweep mix-blend-overlay pointer-events-none"></div>
                         </h1>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-orbitron font-bold tracking-[0.5em] text-amber-400 uppercase drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] mt-4">
+                      <p 
+                        className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-amber-400 uppercase mt-4"
+                        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(245,158,11,0.7)' }}
+                      >
                         "I CAME"
                       </p>
                     </motion.div>
@@ -314,7 +317,10 @@ export default function App() {
                           <span className="absolute inset-0 text-transparent bg-clip-text bg-gradient-to-r from-transparent via-orange-500/20 to-transparent animate-pulse pointer-events-none"></span>
                         </h1>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-orbitron font-bold tracking-[0.5em] text-orange-400 uppercase drop-shadow-[0_0_8px_rgba(249,115,22,0.8)] mt-4">
+                      <p 
+                        className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-orange-400 uppercase mt-4"
+                        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(249,115,22,0.7)' }}
+                      >
                         "I CONQUERED"
                       </p>
                     </motion.div>
@@ -346,7 +352,10 @@ export default function App() {
                       <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-orbitron font-black tracking-[0.2em] select-none uppercase leading-none water-text">
                         VIDI
                       </h1>
-                      <p className="text-[10px] sm:text-xs font-orbitron font-bold tracking-[0.5em] text-cyan-300 uppercase drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] mt-4">
+                      <p 
+                        className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-cyan-300 uppercase mt-4"
+                        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(6,182,212,0.7)' }}
+                      >
                         "I SAW"
                       </p>
                     </motion.div>
