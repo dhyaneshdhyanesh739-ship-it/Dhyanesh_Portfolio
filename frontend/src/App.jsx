@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Component imports
 import ParticleBackground from './components/ParticleBackground';
 import Dashboard from './components/Dashboard';
-import vediImg from './assets/vedi.jpg';
-import viciImg from './assets/vici.png';
 
 const generateLightningPath = (startX, startY, endX, endY, displace) => {
   const points = [[startX, startY]];
@@ -139,6 +137,46 @@ const WaterDroplets = () => {
             animationDuration: `${d.duration}s`
           }}
         />
+      ))}
+    </div>
+  );
+};
+
+const Sparkles = ({ color }) => {
+  const sparkles = useMemo(() => {
+    const arr = [];
+    const count = 35;
+    for (let i = 0; i < count; i++) {
+      const left = Math.random() * 110 - 5;
+      const top = Math.random() * 110 - 5;
+      const size = 4 + Math.random() * 8;
+      const delay = Math.random() * 3;
+      const duration = 1.2 + Math.random() * 1.8;
+      arr.push({ id: i, left, top, size, delay, duration });
+    }
+    return arr;
+  }, []);
+
+  return (
+    <div className="absolute inset-[-30px] pointer-events-none z-40 overflow-visible">
+      {sparkles.map(s => (
+        <svg
+          key={s.id}
+          className="absolute sparkle-particle"
+          style={{
+            left: `${s.left}%`,
+            top: `${s.top}%`,
+            width: `${s.size}px`,
+            height: `${s.size}px`,
+            fill: color,
+            '--glow-color': color,
+            animationDelay: `${s.delay}s`,
+            animationDuration: `${s.duration}s`
+          }}
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
+        </svg>
       ))}
     </div>
   );
@@ -276,8 +314,9 @@ export default function App() {
                       className="absolute flex flex-col items-center justify-center text-center px-4 z-30"
                     >
                       <div className="relative select-none gold-glow-wrapper">
-                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-orbitron font-black tracking-[0.2em] uppercase leading-none pr-[-0.2em] electric-text">
-                          VENI
+                        <Sparkles color="#fef08a" />
+                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none electric-text">
+                          VINI
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/25 to-transparent -skew-x-20 animate-sweep mix-blend-overlay pointer-events-none"></div>
                         </h1>
                       </div>
@@ -313,12 +352,11 @@ export default function App() {
                       }}
                       className="absolute flex flex-col items-center justify-center text-center px-4 z-30"
                     >
-                      <div className="relative select-none flex justify-center items-center">
-                        <img 
-                          src={viciImg} 
-                          alt="VICI" 
-                          className="max-w-[80vw] max-h-[40vh] sm:max-h-[50vh] object-contain mix-blend-screen select-none pointer-events-none" 
-                        />
+                      <div className="relative select-none fire-glow-wrapper">
+                        <Sparkles color="#fb923c" />
+                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none fire-text">
+                          VICI
+                        </h1>
                       </div>
                       <p 
                         className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-orange-400 uppercase mt-4"
@@ -350,14 +388,13 @@ export default function App() {
                         y: { repeat: Infinity, duration: 2.5, ease: 'easeInOut' },
                         default: { duration: 0.8, ease: 'easeOut' }
                       }}
-                      className="absolute flex flex-col items-center justify-center text-center px-4"
+                      className="absolute flex flex-col items-center justify-center text-center px-4 z-30"
                     >
-                      <div className="relative select-none flex justify-center items-center">
-                        <img 
-                          src={vediImg} 
-                          alt="VEDI" 
-                          className="max-w-[80vw] max-h-[40vh] sm:max-h-[50vh] object-contain mix-blend-screen select-none pointer-events-none" 
-                        />
+                      <div className="relative select-none">
+                        <Sparkles color="#22d3ee" />
+                        <h1 className="text-7xl sm:text-[10rem] md:text-[13rem] font-serif font-bold tracking-[0.05em] uppercase leading-none water-text">
+                          VEDI
+                        </h1>
                       </div>
                       <p 
                         className="text-xs sm:text-sm font-orbitron font-bold tracking-[0.5em] text-cyan-300 uppercase mt-4"

@@ -474,3 +474,16 @@ body, .glass-panel, .glass-card, header, footer, button, span, h1, h2, h3, h4, h
 .cursor-line {
   animation: cursor-blink 0.9s step-end infinite;
 }
+
+/* Text Sparkles Twinkling Keyframes */
+@keyframes sparkle-twinkle {
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; filter: drop-shadow(0 0 0px transparent); }
+  50% { transform: scale(1) rotate(180deg); opacity: 1; filter: drop-shadow(0 0 6px var(--glow-color, rgba(251, 191, 36, 0.8))); }
+}
+
+.sparkle-particle {
+  position: absolute;
+  pointer-events: none;
+  animation: sparkle-twinkle infinite ease-in-out;
+}
+

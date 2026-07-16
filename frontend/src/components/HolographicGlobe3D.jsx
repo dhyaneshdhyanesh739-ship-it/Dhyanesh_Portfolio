@@ -72,7 +72,7 @@ export default function HolographicGlobe3D() {
       {/* Upward Volumetric Scanner Light Cone */}
       <mesh position={[0, -0.6, 0]}>
         <cylinderGeometry args={[0.8, 0.2, 1.4, 32, 1, true]} />
-        <meshBasicMaterial 
+        <meshBasicMaterial
           color="#fbbf24" 
           transparent 
           opacity={0.06} 
