@@ -260,10 +260,12 @@ export default function App() {
   }, [scene]);
 
   return (
-    <div className="relative w-full min-h-screen select-none overflow-hidden transition-colors duration-500 bg-transparent text-slate-800 dark:text-slate-200">
+    <div className={`relative w-full min-h-screen select-none overflow-hidden transition-colors duration-500 ${
+      scene === 'intro' ? 'bg-[#020208] text-slate-200' : 'bg-transparent text-slate-800 dark:text-slate-200'
+    }`}>
       
-      {/* Living WebGL Galaxy Background */}
-      <GalaxyBackground />
+      {/* Living WebGL Galaxy Background (Active on dashboard, removed from VINI VEDI VICI intro) */}
+      {scene === 'dashboard' && <GalaxyBackground />}
 
       {/* Custom Cursor */}
       {showCursor && (
