@@ -25,6 +25,32 @@ export default function ContactSection() {
   const [status, setStatus] = useState(null); // 'success' | 'error'
   const [statusMsg, setStatusMsg] = useState('');
 
+  React.useEffect(() => {
+    // Pre-warm the backend server to avoid Render cold-start delays
+    let rawApiUrl = import.meta.env.VITE_API_URL;
+    let API_URL = rawApiUrl;
+    
+    if (!API_URL) {
+      API_URL = import.meta.env.DEV 
+        ? 'http://localhost:5000' 
+        : 'https://dhyanesh-portfolio.onrender.com';
+    } else {
+      API_URL = API_URL.replace(/[\[\]"']/g, '').trim();
+    }
+
+    if (API_URL && !/^https?:\/\//i.test(API_URL)) {
+      API_URL = `https://${API_URL}`;
+    }
+
+    if (API_URL && API_URL.includes('dhyanesh-portfolio-backend.onrender.com')) {
+      API_URL = 'https://dhyanesh-portfolio.onrender.com';
+    }
+
+    axios.get(`${API_URL}/api/health`)
+      .then(() => console.log('Backend server pre-warmed successfully.'))
+      .catch((err) => console.warn('Pre-warming backend failed or took too long:', err));
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
