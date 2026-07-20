@@ -158,22 +158,22 @@ const GALAXY_SHADERS = {
       // --- COLOR PALETTE DEFINITION ---
       // Background colors
       vec3 bgDark = vec3(0.03, 0.03, 0.07); // deep space midnight
-      vec3 bgLight = vec3(0.97, 0.98, 1.0); // clean slate light blue-grey
+      vec3 bgLight = vec3(0.97, 0.98, 0.99); // clean slate light blue-grey
       vec3 bgColor = mix(bgLight, bgDark, theme);
 
-      // Purple cloud colors
+      // Purple cloud colors (richer in light mode)
       vec3 purpleDark = vec3(0.42, 0.12, 0.72); // glowing neon violet
-      vec3 purpleLight = vec3(0.88, 0.82, 0.96); // pastel lavender
+      vec3 purpleLight = vec3(0.68, 0.42, 0.88); // rich pastel lavender/purple
       vec3 purple = mix(purpleLight, purpleDark, theme);
 
-      // Blue cloud colors
+      // Blue cloud colors (richer in light mode)
       vec3 blueDark = vec3(0.04, 0.36, 0.88); // glowing cosmic blue
-      vec3 blueLight = vec3(0.82, 0.88, 0.98); // pastel sky blue
+      vec3 blueLight = vec3(0.48, 0.68, 0.92); // rich pastel sky blue
       vec3 blue = mix(blueLight, blueDark, theme);
 
-      // Green cloud colors
+      // Green cloud colors (richer in light mode)
       vec3 greenDark = vec3(0.0, 0.68, 0.52); // glowing emerald teal
-      vec3 greenLight = vec3(0.84, 0.93, 0.90); // pastel mint green
+      vec3 greenLight = vec3(0.48, 0.82, 0.72); // rich pastel mint green
       vec3 green = mix(greenLight, greenDark, theme);
 
       // --- NEBULA COMPOSITION ---
@@ -183,17 +183,18 @@ const GALAXY_SHADERS = {
 
       // Sheet lightning effect
       float lightningIntensity = getLightning(uTime, nClamped);
-      vec3 lightningColor = mix(vec3(0.5, 0.5, 0.6), vec3(0.8, 0.85, 1.0), theme);
+      vec3 lightningColor = mix(vec3(0.6, 0.55, 0.75), vec3(0.8, 0.85, 1.0), theme);
       nebulaColor += lightningColor * lightningIntensity;
 
-      // Density map based on theme to maintain readability
-      float nebulaAlpha = nClamped * mix(0.12, 0.72, theme);
+      // Density map based on theme to maintain readability (raised min from 0.12 to 0.38)
+      float nebulaAlpha = nClamped * mix(0.38, 0.72, theme);
 
       // --- AURORA COMPOSITION ---
       float auroraIntensity = getAuroraCurtain(vUv + mouseOffset * 0.4, uTime);
       vec3 auroraColorBase = mix(vec3(0.0, 0.76, 0.58), vec3(0.18, 0.76, 0.38), sin(uTime * 0.45) * 0.5 + 0.5);
-      vec3 auroraColor = mix(vec3(0.86, 0.95, 0.92), auroraColorBase, theme);
-      float auroraAlpha = auroraIntensity * mix(0.08, 0.38, theme);
+      // Vivid soft teal-green in light mode
+      vec3 auroraColor = mix(vec3(0.42, 0.84, 0.76), auroraColorBase, theme);
+      float auroraAlpha = auroraIntensity * mix(0.24, 0.38, theme);
 
       // --- TWINKLING STARS (Dark Mode Only) ---
       vec2 starUv = (vUv + mouseOffset * 0.12) * 160.0;
@@ -260,7 +261,7 @@ const FloatingDustParticles = ({ theme }) => {
 
   // Dynamic particle color and opacity based on active theme
   const particleColor = theme === 'dark' ? '#a5f3fc' : '#c084fc';
-  const particleOpacity = theme === 'dark' ? 0.65 : 0.28;
+  const particleOpacity = theme === 'dark' ? 0.65 : 0.48;
 
   return (
     <points ref={pointsRef}>
