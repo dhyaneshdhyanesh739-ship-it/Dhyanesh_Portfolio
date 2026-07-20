@@ -161,19 +161,19 @@ const GALAXY_SHADERS = {
       vec3 bgLight = vec3(0.97, 0.98, 0.99); // clean slate light blue-grey
       vec3 bgColor = mix(bgLight, bgDark, theme);
 
-      // Purple cloud colors (richer in light mode)
+      // Purple cloud colors (richer in light mode - using soft rose/coral pink)
       vec3 purpleDark = vec3(0.42, 0.12, 0.72); // glowing neon violet
-      vec3 purpleLight = vec3(0.68, 0.42, 0.88); // rich pastel lavender/purple
+      vec3 purpleLight = vec3(0.92, 0.45, 0.62); // soft rose/coral pink
       vec3 purple = mix(purpleLight, purpleDark, theme);
 
-      // Blue cloud colors (richer in light mode)
+      // Blue cloud colors (richer in light mode - using soft gold/amber)
       vec3 blueDark = vec3(0.04, 0.36, 0.88); // glowing cosmic blue
-      vec3 blueLight = vec3(0.48, 0.68, 0.92); // rich pastel sky blue
+      vec3 blueLight = vec3(0.94, 0.68, 0.38); // soft gold/amber
       vec3 blue = mix(blueLight, blueDark, theme);
 
-      // Green cloud colors (richer in light mode)
+      // Green cloud colors (richer in light mode - using soft sky blue/teal)
       vec3 greenDark = vec3(0.0, 0.68, 0.52); // glowing emerald teal
-      vec3 greenLight = vec3(0.48, 0.82, 0.72); // rich pastel mint green
+      vec3 greenLight = vec3(0.38, 0.76, 0.86); // soft sky blue/teal
       vec3 green = mix(greenLight, greenDark, theme);
 
       // --- NEBULA COMPOSITION ---
@@ -192,9 +192,10 @@ const GALAXY_SHADERS = {
       // --- AURORA COMPOSITION ---
       float auroraIntensity = getAuroraCurtain(vUv + mouseOffset * 0.4, uTime);
       vec3 auroraColorBase = mix(vec3(0.0, 0.76, 0.58), vec3(0.18, 0.76, 0.38), sin(uTime * 0.45) * 0.5 + 0.5);
-      // Vivid soft teal-green in light mode
-      vec3 auroraColor = mix(vec3(0.42, 0.84, 0.76), auroraColorBase, theme);
+      // Soft rose-violet in light mode to match the rose/gold theme
+      vec3 auroraColor = mix(vec3(0.86, 0.48, 0.78), auroraColorBase, theme);
       float auroraAlpha = auroraIntensity * mix(0.24, 0.38, theme);
+
 
       // --- TWINKLING STARS (Dark Mode Only) ---
       vec2 starGridUv = (vUv + mouseOffset * 0.12) * 220.0;
