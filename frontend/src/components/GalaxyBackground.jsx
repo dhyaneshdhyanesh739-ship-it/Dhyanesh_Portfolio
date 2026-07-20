@@ -351,7 +351,7 @@ export default function GalaxyBackground({ scene }) {
 
   return (
     <div
-      className={`fixed inset-0 -z-10 pointer-events-none transition-opacity duration-1000 select-none ${
+      className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 select-none ${
         scene === 'dashboard' ? 'opacity-100' : 'opacity-0'
       }`}
     >
