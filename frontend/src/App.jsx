@@ -184,7 +184,7 @@ const Sparkles = ({ color }) => {
 };
 
 export default function App() {
-  const [scene, setScene] = useState('dashboard'); // starts directly at 'dashboard'
+  const [scene, setScene] = useState('intro'); // starts at cinematic 'intro' (VINI -> VEDI -> VICI) then transitions to 'dashboard'
   const [introStage, setIntroStage] = useState('quotes'); // starts at 'quotes'
   const [showCursor, setShowCursor] = useState(false);
   
