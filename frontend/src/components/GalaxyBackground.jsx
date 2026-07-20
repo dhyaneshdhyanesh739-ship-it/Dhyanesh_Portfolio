@@ -197,10 +197,14 @@ const GALAXY_SHADERS = {
       float auroraAlpha = auroraIntensity * mix(0.24, 0.38, theme);
 
       // --- TWINKLING STARS (Dark Mode Only) ---
-      vec2 starUv = (vUv + mouseOffset * 0.12) * 160.0;
-      float starNoise = rand(floor(starUv));
-      float starTwinkle = sin(uTime * 4.5 + starNoise * 6.28) * 0.5 + 0.5;
-      float stars = step(0.994, starNoise) * starTwinkle * theme * 0.85;
+      vec2 starGridUv = (vUv + mouseOffset * 0.12) * 220.0;
+      vec2 ipos = floor(starGridUv);
+      vec2 fpos = fract(starGridUv);
+      float starNoise = rand(ipos);
+      float starTwinkle = sin(uTime * 4.0 + starNoise * 6.28) * 0.5 + 0.5;
+      // Radial falloff from the cell center to create tiny circular points instead of rectangular grid blocks
+      float starShape = smoothstep(0.15, 0.0, length(fpos - vec2(0.5)));
+      float stars = step(0.993, starNoise) * starShape * starTwinkle * theme * 0.95;
 
       // --- BLENDING ---
       vec3 color = bgColor;
