@@ -4,19 +4,19 @@
 
 :root {
   /* LIGHT MODE (Default) */
-  --bg-main: #f8fafc;
+  --bg-main: transparent;
   --text-main: #0f172a;
   --text-muted: #475569;
-  --text-cyan-accent: #2563eb;
+  --text-cyan-accent: #0284c7;
   --text-purple-accent: #7c3aed;
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   --panel-bg: rgba(255, 255, 255, 0.85);
-  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-bg: rgba(255, 255, 255, 0.82);
   --card-border: rgba(0, 0, 0, 0.06);
-  --card-hover-border: rgba(37, 99, 235, 0.25);
-  --cyber-grid-opacity: 0.06;
+  --card-hover-border: rgba(2, 132, 199, 0.35);
+  --cyber-grid-opacity: 0.04;
   --grid-line: rgba(0, 0, 0, 0.03);
   --subtle-border: rgba(0, 0, 0, 0.06);
   --subtle-bg: rgba(255, 255, 255, 0.8);
@@ -26,7 +26,7 @@
 
 :root.dark {
   /* DARK MODE */
-  --bg-main: #0b0b14;
+  --bg-main: transparent;
   --text-main: #e2e8f0;
   --text-muted: #64748b;
   --text-cyan-accent: #06b6d4;

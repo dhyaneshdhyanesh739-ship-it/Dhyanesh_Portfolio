@@ -3,370 +3,400 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useTheme } from '../context/ThemeContext';
 
-// Custom GLSL Shaders for the Living Galaxy
-const GALAXY_SHADERS = {
-  vertexShader: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+// -----------------------------------------------------------------------------
+// GLSL SHADERS FOR VOLUMETRIC NEBULA & LIVING GALAXY
+// -----------------------------------------------------------------------------
+
+const nebulaVertexShader = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position, 1.0);
+  }
+`;
+
+const nebulaFragmentShader = /* glsl */ `
+  uniform float uTime;
+  uniform vec2 uResolution;
+  uniform vec2 uMouse;
+  uniform float uIsDark;
+
+  varying vec2 vUv;
+
+  // 2D Simplex Noise Helper Functions
+  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+
+  float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                       -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy) );
+    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i1;
+    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod(i, 289.0);
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+      + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m ;
+    m = m*m ;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+    vec3 g;
+    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
+  }
+
+  // Fractional Brownian Motion for multi-octave cloud textures
+  float fbm(vec2 st) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    for (int i = 0; i < 5; i++) {
+      value += amplitude * snoise(st * frequency);
+      frequency *= 2.1;
+      amplitude *= 0.5;
     }
-  `,
-  fragmentShader: `
-    uniform float uTime;
-    uniform float uTheme; // 0.0 = Light Mode, 1.0 = Dark Mode
-    uniform vec2 uMouse;
-    varying vec2 vUv;
+    return value;
+  }
 
-    // Fast, textureless 3D Simplex Noise by McEwan / Ashima Arts
-    vec4 permute(vec4 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  void main() {
+    // Aspect ratio corrected coordinates
+    vec2 st = (gl_FragCoord.xy - 0.5 * uResolution) / min(uResolution.x, uResolution.y);
+    
+    // Parallax mouse displacement
+    st += uMouse * 0.08;
 
-    float snoise(vec3 v) {
-      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+    // Scale space for cosmic landscape
+    st *= 1.35;
 
-      // First corner
-      vec3 i  = floor(v + dot(v, C.yyy));
-      vec3 x0 = v - i + dot(i, C.xxx);
+    // Non-repeating evolving time vectors
+    float t1 = uTime * 0.045;
+    float t2 = uTime * 0.032;
+    float t3 = uTime * 0.018;
 
-      // Other corners
-      vec3 g = step(x0.yzx, x0.xyz);
-      vec3 l = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy);
-      vec3 i2 = max(g.xyz, l.zxy);
+    // Domain Warping Layer 1: Smoke & Gas flow
+    vec2 q = vec2(0.0);
+    q.x = fbm(st + vec2(0.0, 0.0) + vec2(t1, t2));
+    q.y = fbm(st + vec2(5.2, 1.3) + vec2(-t2, t1));
 
-      vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-      vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-      vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+    // Domain Warping Layer 2: Moving Nebula filaments
+    vec2 r = vec2(0.0);
+    r.x = fbm(st + 3.8 * q + vec2(1.7, 9.2) + vec2(t2 * 1.4, t3));
+    r.y = fbm(st + 3.8 * q + vec2(8.3, 2.8) + vec2(-t3, t1 * 1.2));
 
-      // Permutations
-      i = mod(i, 289.0);
-      vec4 p = permute(permute(permute(
-                 i.z + vec4(0.0, i1.z, i2.z, 1.0))
-               + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-               + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+    // Final FBM composite
+    float f = fbm(st + 4.2 * r + vec2(t1 * 0.8, -t2 * 0.9));
+    f = clamp(f, -1.0, 1.0);
 
-      // Gradients
-      float n_ = 1.0/7.0; // N=7
-      vec3 ns = n_ * D.wyz - D.xzx;
+    // Dynamic Plasma Wave calculation
+    float wave = sin(st.x * 3.5 + st.y * 2.5 + uTime * 0.3 + f * 4.0) * 0.5 + 0.5;
 
-      vec4 j = p - 49.0 * floor(p * ns.z * ns.z); // mod(p, N*N)
+    // Aurora Light Bands
+    float auroraPattern = sin(st.x * 2.2 + uTime * 0.2 + fbm(st * 1.8 + t1) * 3.0) * 0.5 + 0.5;
+    float auroraMask = smoothstep(-0.8, 0.9, st.y + fbm(st * 2.5) * 0.4);
+    float aurora = auroraPattern * auroraMask * 0.85;
 
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_); // mod(j, N)
+    // Internal Lightning Flashes inside the clouds
+    float lightningNoise = fbm(st * 6.0 + vec2(uTime * 1.8, -uTime * 1.4));
+    float pulse1 = sin(uTime * 3.7);
+    float pulse2 = cos(uTime * 5.3);
+    float pulse3 = sin(uTime * 8.9);
+    float flashThreshold = pow(clamp(pulse1 * pulse2 * pulse3, 0.0, 1.0), 9.0);
+    float lightning = pow(clamp(lightningNoise, 0.0, 1.0), 3.5) * flashThreshold * 4.5;
 
-      vec4 x = x_ * ns.x + ns.yyyy;
-      vec4 y = y_ * ns.x + ns.yyyy;
-      vec4 h = 1.0 - abs(x) - abs(y);
+    // COLOR PALETTES (Blue, Purple, Green, Cyan Energy Flow)
+    // Dark Mode Colors: Deep Cosmic Void with Glowing Plasma
+    vec3 darkVoid      = vec3(0.012, 0.015, 0.045); // Deep Indigo Black
+    vec3 darkRoyalBlue = vec3(0.04, 0.12, 0.38);   // Royal Blue
+    vec3 darkCyan      = vec3(0.02, 0.55, 0.72);   // Electric Cyan
+    vec3 darkPurple    = vec3(0.48, 0.18, 0.85);   // Vibrant Violet
+    vec3 darkEmerald   = vec3(0.06, 0.68, 0.45);   // Aurora Emerald
+    vec3 darkMagenta   = vec3(0.85, 0.22, 0.65);   // Glowing Magenta
+    vec3 darkLightning = vec3(0.70, 0.95, 1.00);   // Electric White-Cyan
 
-      vec4 b0 = vec4(x.xy, y.xy);
-      vec4 b1 = vec4(x.zw, y.zw);
+    // Light Mode Colors: Crisp Atmospheric Pearlescent Sky with High Contrast Waves
+    vec3 lightSky      = vec3(0.96, 0.97, 0.99);   // Pure Pearlescent White
+    vec3 lightCyan     = vec3(0.82, 0.93, 0.99);   // Light Sky Blue
+    vec3 lightBlueWave = vec3(0.35, 0.62, 0.96);   // Sapphire Accent
+    vec3 lightPurple   = vec3(0.68, 0.45, 0.95);   // Vibrant Lavender-Violet
+    vec3 lightMint     = vec3(0.32, 0.85, 0.68);   // Mint Emerald
+    vec3 lightRose     = vec3(0.95, 0.48, 0.72);   // Rose Quartz Accent
+    vec3 lightLightning= vec3(0.20, 0.50, 0.95);   // High Contrast Electric Flash
 
-      vec4 s0 = floor(b0)*2.0 + 1.0;
-      vec4 s1 = floor(b1)*2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
+    // Mix color layers for Dark Mode
+    vec3 darkCol = mix(darkVoid, darkRoyalBlue, clamp(f * 1.4 + 0.3, 0.0, 1.0));
+    darkCol = mix(darkCol, darkPurple, clamp(length(q) * 0.9, 0.0, 1.0));
+    darkCol = mix(darkCol, darkCyan, clamp(length(r.x) * 0.85, 0.0, 1.0));
+    darkCol += darkEmerald * aurora * 0.9;
+    darkCol += darkMagenta * wave * 0.35;
+    darkCol += darkLightning * lightning;
 
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+    // Mix color layers for Light Mode
+    vec3 lightCol = mix(lightSky, lightCyan, clamp(f * 0.8 + 0.2, 0.0, 1.0));
+    lightCol = mix(lightCol, lightPurple, clamp(length(q) * 0.45, 0.0, 1.0));
+    lightCol = mix(lightCol, lightBlueWave, clamp(length(r.x) * 0.40, 0.0, 1.0));
+    lightCol = mix(lightCol, lightMint, aurora * 0.45);
+    lightCol = mix(lightCol, lightRose, wave * 0.25);
+    lightCol -= lightLightning * (lightning * 0.35); // Contrast shift on flash
 
-      vec3 p0 = vec3(a0.xy, h.x);
-      vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z);
-      vec3 p3 = vec3(a1.zw, h.w);
+    // Smooth theme interpolation
+    vec3 finalColor = mix(lightCol, darkCol, uIsDark);
 
-      // Normalise gradients
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-      p0 *= norm.x;
-      p1 *= norm.y;
-      p2 *= norm.z;
-      p3 *= norm.w;
+    // Subtle radial vignetting to enhance depth
+    float distFromCenter = length(vUv - vec2(0.5));
+    float vignette = 1.0 - smoothstep(0.4, 0.95, distFromCenter);
+    float vignetteFactor = mix(0.92 + 0.08 * vignette, 0.75 + 0.25 * vignette, uIsDark);
+    finalColor *= vignetteFactor;
 
-      // Mix final noise value
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+    gl_FragColor = vec4(finalColor, 1.0);
+  }
+`;
+
+// -----------------------------------------------------------------------------
+// GLSL SHADERS FOR FLOATING COSMIC STARS & PARTICLES
+// -----------------------------------------------------------------------------
+
+const starVertexShader = /* glsl */ `
+  attribute float aScale;
+  attribute float aPhase;
+  attribute vec3 aColor;
+
+  uniform float uTime;
+  uniform float uIsDark;
+
+  varying vec3 vColor;
+  varying float vAlpha;
+
+  void main() {
+    vColor = aColor;
+    
+    // Organic floating movement
+    vec3 pos = position;
+    pos.x += sin(uTime * 0.2 + aPhase) * 0.35;
+    pos.y += cos(uTime * 0.25 + aPhase * 1.5) * 0.35;
+    pos.z += sin(uTime * 0.15 + aPhase * 2.0) * 0.25;
+
+    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+
+    // Dynamic twinkling
+    float twinkle = 0.5 + 0.5 * sin(uTime * 2.5 + aPhase * 6.28);
+    
+    // Size attenuation based on depth
+    gl_PointSize = aScale * (260.0 / -mvPosition.z) * (0.8 + 0.4 * twinkle);
+
+    // Opacity modulation between themes
+    vAlpha = mix(0.45 + 0.55 * twinkle, 0.65 + 0.35 * twinkle, uIsDark);
+  }
+`;
+
+const starFragmentShader = /* glsl */ `
+  uniform float uIsDark;
+  varying vec3 vColor;
+  varying float vAlpha;
+
+  void main() {
+    // Soft anti-aliased circular particle point
+    float dist = length(gl_PointCoord - vec2(0.5));
+    if (dist > 0.5) discard;
+
+    // Smooth soft radial bloom halo
+    float alpha = smoothstep(0.5, 0.0, dist) * vAlpha;
+    float core = smoothstep(0.2, 0.0, dist);
+
+    // Adapt particle brightness for light/dark mode
+    vec3 col = vColor;
+    if (uIsDark < 0.5) {
+      // In light mode, enhance particle color intensity for crisp visibility over white glass panels
+      col = mix(col * 0.7, vec3(0.1, 0.2, 0.4), 0.25);
     }
 
-    // Fractional Brownian Motion (4 octaves for organic detail with high performance)
-    float fbm(vec3 p) {
-      float value = 0.0;
-      float amplitude = 0.5;
-      float frequency = 1.0;
-      for (int i = 0; i < 4; i++) {
-        value += amplitude * snoise(p * frequency);
-        frequency *= 2.0;
-        amplitude *= 0.5;
-      }
-      return value;
-    }
+    gl_FragColor = vec4(col + vec3(core * 0.4), alpha);
+  }
+`;
 
-    // Domain Warping for dynamic fluid-like swirling filaments
-    float pattern(vec3 p, out vec3 q, out vec3 r) {
-      q = vec3(
-        fbm(p + vec3(0.0, 0.0, 0.0)),
-        fbm(p + vec3(4.2, 1.1, 0.3)),
-        fbm(p + vec3(1.3, 8.4, 0.6))
-      );
+// -----------------------------------------------------------------------------
+// R3F NEBULA PLANE COMPONENT
+// -----------------------------------------------------------------------------
 
-      r = vec3(
-        fbm(p + q * 2.2 + vec3(1.5, 7.8, 0.1)),
-        fbm(p + q * 1.8 + vec3(6.2, 2.3, 0.5)),
-        fbm(p + q * 2.0 + vec3(2.1, 1.4, 0.8))
-      );
-
-      return fbm(p + r * 2.0);
-    }
-
-    // Pseudo-random number generator
-    float rand(vec2 n) {
-      return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
-    }
-
-    // Sheet lightning flashes inside clouds
-    float getLightning(float time, float noiseVal) {
-      // Periodic lightning triggers (every few seconds, random flickering)
-      float trigger = step(0.985, sin(time * 0.35) * cos(time * 0.65) * 0.5 + 0.5);
-      float flicker = sin(time * 90.0) * 0.45 + 0.55;
-      // Confine flashes to the dense parts of the nebula
-      return trigger * flicker * smoothstep(0.42, 0.85, noiseVal) * 0.22;
-    }
-
-    // Aurora curtains waving in the space
-    float getAuroraCurtain(vec2 uv, float time) {
-      float wave = sin(uv.x * 2.8 + time * 0.12) * 0.22 + cos(uv.x * 1.4 - time * 0.08) * 0.1;
-      float rays = snoise(vec3(uv.x * 18.0, uv.y * 1.5, time * 0.08));
-      float shape = smoothstep(0.38, 0.0, abs(uv.y - 0.45 - wave - rays * 0.08));
-      return shape * (0.4 + 0.6 * rays);
-    }
-
-    void main() {
-      // uTheme ranges from 0.0 (Light) to 1.0 (Dark)
-      float theme = clamp(uTheme, 0.0, 1.0);
-
-      // Subtle parallax coordinate offset based on smoothed mouse positions
-      vec2 mouseOffset = uMouse * 0.18;
-      
-      // Coordinates for domain warping
-      vec3 p = vec3((vUv + mouseOffset) * 2.3, uTime * 0.03);
-      vec3 q, r;
-      float n = pattern(p, q, r);
-
-      // Clamp noise value
-      float nClamped = clamp((n + 0.45) * 1.1, 0.0, 1.0);
-
-      // --- COLOR PALETTE DEFINITION ---
-      // Background colors
-      vec3 bgDark = vec3(0.03, 0.03, 0.07); // deep space midnight
-      vec3 bgLight = vec3(0.97, 0.98, 0.99); // clean slate light blue-grey
-      vec3 bgColor = mix(bgLight, bgDark, theme);
-
-      // Purple cloud colors (richer in light mode - using soft rose/coral pink)
-      vec3 purpleDark = vec3(0.42, 0.12, 0.72); // glowing neon violet
-      vec3 purpleLight = vec3(0.92, 0.45, 0.62); // soft rose/coral pink
-      vec3 purple = mix(purpleLight, purpleDark, theme);
-
-      // Blue cloud colors (richer in light mode - using soft gold/amber)
-      vec3 blueDark = vec3(0.04, 0.36, 0.88); // glowing cosmic blue
-      vec3 blueLight = vec3(0.94, 0.68, 0.38); // soft gold/amber
-      vec3 blue = mix(blueLight, blueDark, theme);
-
-      // Green cloud colors (richer in light mode - using soft sky blue/teal)
-      vec3 greenDark = vec3(0.0, 0.68, 0.52); // glowing emerald teal
-      vec3 greenLight = vec3(0.38, 0.76, 0.86); // soft sky blue/teal
-      vec3 green = mix(greenLight, greenDark, theme);
-
-      // --- NEBULA COMPOSITION ---
-      // Combine noise warps to distribute colors organically
-      vec3 nebulaColor = mix(purple, blue, clamp(length(q), 0.0, 1.0));
-      nebulaColor = mix(nebulaColor, green, clamp(r.x * 2.2, 0.0, 1.0));
-
-      // Sheet lightning effect
-      float lightningIntensity = getLightning(uTime, nClamped);
-      vec3 lightningColor = mix(vec3(0.6, 0.55, 0.75), vec3(0.8, 0.85, 1.0), theme);
-      nebulaColor += lightningColor * lightningIntensity;
-
-      // Density map based on theme to maintain readability (raised min from 0.12 to 0.38)
-      float nebulaAlpha = nClamped * mix(0.38, 0.72, theme);
-
-      // --- AURORA COMPOSITION ---
-      float auroraIntensity = getAuroraCurtain(vUv + mouseOffset * 0.4, uTime);
-      vec3 auroraColorBase = mix(vec3(0.0, 0.76, 0.58), vec3(0.18, 0.76, 0.38), sin(uTime * 0.45) * 0.5 + 0.5);
-      // Soft rose-violet in light mode to match the rose/gold theme
-      vec3 auroraColor = mix(vec3(0.86, 0.48, 0.78), auroraColorBase, theme);
-      float auroraAlpha = auroraIntensity * mix(0.24, 0.38, theme);
-
-
-      // --- TWINKLING STARS (Dark Mode Only) ---
-      vec2 starGridUv = (vUv + mouseOffset * 0.12) * 220.0;
-      vec2 ipos = floor(starGridUv);
-      vec2 fpos = fract(starGridUv);
-      float starNoise = rand(ipos);
-      float starTwinkle = sin(uTime * 4.0 + starNoise * 6.28) * 0.5 + 0.5;
-      // Radial falloff from the cell center to create tiny circular points instead of rectangular grid blocks
-      float starShape = smoothstep(0.15, 0.0, length(fpos - vec2(0.5)));
-      float stars = step(0.993, starNoise) * starShape * starTwinkle * theme * 0.95;
-
-      // --- BLENDING ---
-      vec3 color = bgColor;
-      color = mix(color, nebulaColor, nebulaAlpha);
-      color = mix(color, auroraColor, auroraAlpha);
-      color += vec3(1.0) * stars;
-
-      // Vignette effect for soft atmospheric borders
-      float dist = length(vUv - vec2(0.5));
-      float vignette = smoothstep(1.35, 0.42, dist);
-      color = color * mix(0.92 + 0.08 * vignette, vignette, theme);
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-};
-
-// 3D Parallax Floating Dust Particles component
-const FloatingDustParticles = ({ theme }) => {
-  const pointsRef = useRef();
-  const count = 280;
-
-  // Generate random stable attributes for particles
-  const [positions, randoms] = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const rnd = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      // Space them out within a large viewport frustum
-      pos[i * 3] = (Math.random() - 0.5) * 16;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 8 - 4; // Z-depth array
-
-      rnd[i * 3] = Math.random();
-      rnd[i * 3 + 1] = Math.random();
-      rnd[i * 3 + 2] = Math.random();
-    }
-    return [pos, rnd];
-  }, []);
-
-  useFrame((state, delta) => {
-    if (!pointsRef.current) return;
-    const time = state.clock.getElapsedTime();
-    const positionsArr = pointsRef.current.geometry.attributes.position.array;
-
-    for (let i = 0; i < count; i++) {
-      // Drift slowly downward and sway left to right
-      positionsArr[i * 3 + 1] -= (0.015 + randoms[i * 3] * 0.02) * delta * 60.0;
-      positionsArr[i * 3] += Math.sin(time * 0.15 + randoms[i * 3 + 1] * 12.0) * 0.003 * delta * 60.0;
-
-      // Recycle particles if they drift off the bottom screen edge
-      if (positionsArr[i * 3 + 1] < -6) {
-        positionsArr[i * 3 + 1] = 6;
-        positionsArr[i * 3] = (Math.random() - 0.5) * 16;
-      }
-    }
-    pointsRef.current.geometry.attributes.position.needsUpdate = true;
-  });
-
-  // Dynamic particle color and opacity based on active theme
-  const particleColor = theme === 'dark' ? '#a5f3fc' : '#c084fc';
-  const particleOpacity = theme === 'dark' ? 0.65 : 0.48;
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.055}
-        color={particleColor}
-        transparent
-        opacity={particleOpacity}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-};
-
-// Shader Mesh Canvas element
-const GalaxyShaderMesh = ({ theme }) => {
+function NebulaPlane({ isDark }) {
   const meshRef = useRef();
   const materialRef = useRef();
-  const { width, height } = useThree((state) => state.viewport);
+  const targetIsDark = useRef(isDark ? 1.0 : 0.0);
 
-  // Mouse coordinate refs
-  const mouseRef = useRef(new THREE.Vector2(0, 0));
-  const targetMouseRef = useRef(new THREE.Vector2(0, 0));
+  useEffect(() => {
+    targetIsDark.current = isDark ? 1.0 : 0.0;
+  }, [isDark]);
+
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uMouse: { value: new THREE.Vector2(0, 0) },
+      uIsDark: { value: isDark ? 1.0 : 0.0 },
+    }),
+    []
+  );
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      // Map mouse location from pixels to normalized [-0.5, 0.5] range
-      targetMouseRef.current.x = (e.clientX / window.innerWidth) - 0.5;
-      targetMouseRef.current.y = (e.clientY / window.innerHeight) - 0.5;
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      if (materialRef.current) {
+        // Smooth lerp mouse coordinates
+        materialRef.current.uniforms.uMouse.value.x += (x - materialRef.current.uniforms.uMouse.value.x) * 0.05;
+        materialRef.current.uniforms.uMouse.value.y += (y - materialRef.current.uniforms.uMouse.value.y) * 0.05;
+      }
     };
+
+    const handleResize = () => {
+      if (materialRef.current) {
+        materialRef.current.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  // Theme target: 0.0 = Light mode, 1.0 = Dark mode
-  const themeTarget = theme === 'dark' ? 1.0 : 0.0;
-  const themeValRef = useRef(themeTarget);
-
-  // Build uniforms structure
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 },
-    uTheme: { value: themeTarget },
-    uMouse: { value: new THREE.Vector2(0, 0) }
-  }), []);
-
   useFrame((state, delta) => {
-    const material = materialRef.current;
-    if (!material) return;
+    if (materialRef.current) {
+      materialRef.current.uniforms.uTime.value += delta;
 
-    // Increment time
-    material.uniforms.uTime.value = state.clock.getElapsedTime();
-
-    // Lerp theme transition smoothly (takes ~1s)
-    const lerpSpeedTheme = 4.0;
-    themeValRef.current += (themeTarget - themeValRef.current) * lerpSpeedTheme * delta;
-    themeValRef.current = Math.max(0.0, Math.min(1.0, themeValRef.current));
-    material.uniforms.uTheme.value = themeValRef.current;
-
-    // Lerp mouse coordinates for organic lag/float velocity
-    const lerpSpeedMouse = 2.2;
-    mouseRef.current.x += (targetMouseRef.current.x - mouseRef.current.x) * lerpSpeedMouse * delta;
-    mouseRef.current.y += (targetMouseRef.current.y - mouseRef.current.y) * lerpSpeedMouse * delta;
-    material.uniforms.uMouse.value.copy(mouseRef.current);
+      // Smooth transition for light/dark theme toggle
+      const currentIsDark = materialRef.current.uniforms.uIsDark.value;
+      const target = targetIsDark.current;
+      materialRef.current.uniforms.uIsDark.value += (target - currentIsDark) * delta * 2.5;
+    }
   });
 
   return (
     <mesh ref={meshRef}>
-      <planeGeometry args={[width * 1.1, height * 1.1]} />
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={materialRef}
-        vertexShader={GALAXY_SHADERS.vertexShader}
-        fragmentShader={GALAXY_SHADERS.fragmentShader}
+        vertexShader={nebulaVertexShader}
+        fragmentShader={nebulaFragmentShader}
         uniforms={uniforms}
         depthWrite={false}
         depthTest={false}
       />
     </mesh>
   );
-};
+}
 
-export default function GalaxyBackground({ scene }) {
-  const { theme } = useTheme();
+// -----------------------------------------------------------------------------
+// R3F STARFIELD & PARTICLES COMPONENT
+// -----------------------------------------------------------------------------
+
+function StarField({ isDark }) {
+  const pointsRef = useRef();
+  const materialRef = useRef();
+  const count = 5500;
+
+  const { positions, scales, phases, colors } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sca = new Float32Array(count);
+    const pha = new Float32Array(count);
+    const col = new Float32Array(count * 3);
+
+    // Color swatches for stars: Cyan, Electric Purple, Aurora Green, Soft Blue, White
+    const palette = [
+      new THREE.Color('#38bdf8'), // Cyan
+      new THREE.Color('#c084fc'), // Purple
+      new THREE.Color('#34d399'), // Mint Green
+      new THREE.Color('#818cf8'), // Soft Indigo
+      new THREE.Color('#f472b6'), // Coral Pink
+      new THREE.Color('#ffffff'), // Pure White
+    ];
+
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 32;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 22;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 20 - 2;
+
+      sca[i] = Math.random() * 0.18 + 0.05;
+      pha[i] = Math.random() * Math.PI * 2;
+
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+    }
+
+    return { positions: pos, scales: sca, phases: pha, colors: col };
+  }, []);
+
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uIsDark: { value: isDark ? 1.0 : 0.0 },
+    }),
+    []
+  );
+
+  useFrame((state, delta) => {
+    if (materialRef.current) {
+      materialRef.current.uniforms.uTime.value += delta;
+
+      const target = isDark ? 1.0 : 0.0;
+      materialRef.current.uniforms.uIsDark.value += (target - materialRef.current.uniforms.uIsDark.value) * delta * 2.5;
+    }
+
+    if (pointsRef.current) {
+      pointsRef.current.rotation.y += delta * 0.015;
+      pointsRef.current.rotation.x += delta * 0.005;
+    }
+  });
 
   return (
-    <div
-      className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 select-none ${
-        scene === 'dashboard' ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-aScale" args={[scales, 1]} />
+        <bufferAttribute attach="attributes-aPhase" args={[phases, 1]} />
+        <bufferAttribute attach="attributes-aColor" args={[colors, 3]} />
+      </bufferGeometry>
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={starVertexShader}
+        fragmentShader={starFragmentShader}
+        uniforms={uniforms}
+        transparent
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// MAIN GALAXY BACKGROUND EXPORT
+// -----------------------------------------------------------------------------
+
+export default function GalaxyBackground() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <div className="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        dpr={[1, 1.5]} // Performance optimization: cap pixel ratio for 4K / mobile screens
-        gl={{ antialias: false, powerPreference: 'high-performance' }}
+        camera={{ position: [0, 0, 5], fov: 60 }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        style={{ width: '100%', height: '100%' }}
       >
-        <GalaxyShaderMesh theme={theme} />
-        <FloatingDustParticles theme={theme} />
+        <NebulaPlane isDark={isDark} />
+        <StarField isDark={isDark} />
       </Canvas>
     </div>
   );

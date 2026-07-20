@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Component imports
 import ParticleBackground from './components/ParticleBackground';
 import Dashboard from './components/Dashboard';
-import GradientMesh from './components/GradientMesh';
+import GalaxyBackground from './components/GalaxyBackground';
 
 const generateLightningPath = (startX, startY, endX, endY, displace) => {
   const points = [[startX, startY]];
@@ -260,13 +260,11 @@ export default function App() {
   }, [scene]);
 
   return (
-    <div className={`relative w-full min-h-screen select-none overflow-hidden transition-colors duration-500 ${
-      scene === 'intro' ? 'bg-[#020208] text-slate-200' : 'bg-transparent text-slate-800 dark:text-slate-200'
-    }`}>
+    <div className="relative w-full min-h-screen select-none overflow-hidden transition-colors duration-500 bg-transparent text-slate-800 dark:text-slate-200">
       
-      {/* Premium Full-Screen Gradient Mesh Background */}
-      <GradientMesh scene={scene} />
-      
+      {/* Living WebGL Galaxy Background */}
+      <GalaxyBackground />
+
       {/* Custom Cursor */}
       {showCursor && (
         <>
