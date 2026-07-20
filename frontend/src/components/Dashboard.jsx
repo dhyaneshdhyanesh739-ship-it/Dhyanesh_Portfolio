@@ -154,13 +154,6 @@ export default function Dashboard() {
   return (
     <div className="w-full min-h-screen bg-transparent text-slate-800 dark:text-slate-200 font-inter flex flex-col justify-between relative selection:bg-cyan-500 selection:text-black transition-colors duration-500">
       
-      {/* Aurora Glow Backgrounds */}
-      <div className="aurora-bg">
-        <div className="aurora-blob-1"></div>
-        <div className="aurora-blob-2"></div>
-        <div className="aurora-blob-3"></div>
-      </div>
-
       {/* Cybernetic Grid Overlay */}
       <div className="absolute inset-0 cyber-grid cyber-grid-fade pointer-events-none z-0"></div>
 

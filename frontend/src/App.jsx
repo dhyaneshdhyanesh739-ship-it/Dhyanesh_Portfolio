@@ -184,7 +184,7 @@ const Sparkles = ({ color }) => {
 };
 
 export default function App() {
-  const [scene, setScene] = useState('intro'); // 'intro' | 'tunnel' | 'dashboard'
+  const [scene, setScene] = useState('dashboard'); // starts directly at 'dashboard'
   const [introStage, setIntroStage] = useState('quotes'); // starts at 'quotes'
   const [showCursor, setShowCursor] = useState(false);
   
